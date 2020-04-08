@@ -23,6 +23,13 @@ public enum STARTracing {
         }
         STARMode.current = mode
         instance = try STARSDK(appId: appId, enviroment: enviroment)
+
+        switch mode {
+        case let .calibration(identifierPrefix):
+            logger?.log("Setting identifier Prefix to \(identifierPrefix)")
+        default:
+            break
+        }
     }
 
     /// The delegate
@@ -41,10 +48,7 @@ public enum STARTracing {
     /// The logger
     public static var logger: LoggingDelegate? {
         set {
-            guard instance != nil else {
-                fatalError("STARSDK not initialized")
-            }
-            instance.logger = newValue
+            instance?.logger = newValue
         }
         get {
             instance.logger

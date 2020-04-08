@@ -129,7 +129,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             let data = try starCrypto!.newTOTP()
             request.value = data
             peripheralManager?.respond(to: request, withResult: .success)
-            logger?.log("[Sender]: ← ✅ didReceiveRead: Responded with new token")
+            logger?.log("[Sender]: ← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
         } catch {
             peripheralManager?.respond(to: request, withResult: .unlikelyError)
             logger?.log("[Sender]: ← ❌ didReceiveRead: Could not respond because token was not generated \(error)")

@@ -38,10 +38,23 @@ class STARSDK {
     /// delegate
     public weak var delegate: STARTracingDelegate?
 
+    /// getter for identifier prefix for calibration mode
+    private(set) var identifierPrefix: String {
+        get {
+            switch STARMode.current {
+            case let .calibration(identifierPrefix):
+                return identifierPrefix
+            default:
+                fatalError("identifierPrefix is only usable in calibration mode")
+            }
+        }
+        set { }
+    }
+
     /// The logger
     public weak var logger: LoggingDelegate? {
         didSet {
-            guard STARMode.current == .calibration else {
+            guard STARMode.current != .production else {
                 fatalError("logger is only usable in calibration mode")
             }
             broadcaster.logger = logger

@@ -300,7 +300,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
     }
 }
 
-fileprivate extension Data {
+extension Data {
     var hexEncodedString: String {
         return map { String(format: "%02hhx ", $0) }.joined()
     }

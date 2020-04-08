@@ -4,11 +4,9 @@ import Foundation
 /// An implementation of the STAR algorithm
 class STARCrypto: STARCryptoProtocol {
     /// The interval for the token regeneration
-    private let interval: Int32 = 60
+    private let interval: Int = 60
     /// A tag to retreive the generated key from the keychain
     private let tag = "ch.ubique.starsdk.key"
-    
-    private let debugIdentifier = "AA"
 
     /// Initialize the algorithm. Can throw if a key cannot be generated
     init() throws {
@@ -30,14 +28,15 @@ class STARCrypto: STARCryptoProtocol {
         let components = calendar.dateComponents([.hour,.minute,.second], from: date)
         let secondsOfDay = components.hour!*3600 + components.minute! * 60 + components.second!
         
-        var counter : Int16 = Int16(secondsOfDay) / Int16(interval)
-        let timestamp = Data(bytes: &counter, count: MemoryLayout<Int16>.size)
+        var counter : UInt16 = UInt16(secondsOfDay / interval)
+        let timestamp = Data(bytes: &counter, count: MemoryLayout<UInt16>.size)
         let hmacValue = hmac(msg: timestamp, key: key)
 
-        if STARMode.current == .calibration {
+        switch STARMode.current {
+        case let .calibration(identifierPrefix):
             let truncatedValue = hmacValue.subdata(in: 0..<20)
-            return debugIdentifier.data(using: .utf8)! + timestamp + truncatedValue
-        } else {
+            return identifierPrefix.data(using: .utf8)! + timestamp + truncatedValue
+        default:
             let truncatedValue = hmacValue.subdata(in: 0..<24)
             return timestamp + truncatedValue
         }

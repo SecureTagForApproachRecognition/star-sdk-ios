@@ -49,7 +49,7 @@ class STARDatabase {
         _handshakesStorage = try HandshakesStorage(database: connection, knownCasesStorage: _knownCasesStorage)
         _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
-        if STARMode.current == .calibration {
+        if STARMode.current != .production {
             connection.trace { [weak self] query in
                 DispatchQueue.main.async {
                     self?.logger?.log(query)
