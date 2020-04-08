@@ -1,10 +1,4 @@
-//
-//  PersistenceManager.swift
-//  epfl-ic-jlcv
-//
 //  Created by Loïc Gardiol on 29.03.20.
-//  Copyright © 2020 Loïc Gardiol. All rights reserved.
-//
 
 import Foundation
 
