@@ -97,4 +97,74 @@ class HandshakesStorage {
     func emptyStorage() throws {
         try database.run(table.delete())
     }
+
+    struct HandshakeRequest {
+        enum FilterOption {
+            case none
+            case tokenStartWith(Data)
+        }
+        let filterOption: FilterOption = .none
+        let offset: Int = 0
+        let limit: Int = 1000
+        init(filterOption: FilterOption = .none, offset: Int = 0, limit: Int = 1000) {
+            self.filterOption = filterOption
+            self.offset = offset
+            self.limit = limit
+        }
+    }
+
+    struct HandshakeResponse {
+        let handshakes: [HandshakeModel]
+        let previousRequest: HandshakeRequest?
+        let nextRequest: HandshakeRequest?
+        fileprivate init(handshakes: [HandshakeModel], previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
+            self.handshakes = handshakes
+            self.previousRequest = previousRequest
+            self.nextRequest = nextRequest
+        }
+    }
+
+    func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
+        assert(request.limit > 0, "Limits should be at least one")
+        assert(request.offset >= 0, "Offset must be positive")
+
+        var query = table.limit(request.limit, offset: request.offset).order(timestampColumn.desc)
+        switch request.filterOption {
+        case .none:
+            break
+        case .tokenStartWith(let tokenStart):
+            query = query.filter(starColumn == tokenStart)
+        }
+
+        var handshakes = Array<HandshakeModel>()
+        handshakes.reserveCapacity(request.limit)
+        for row in try database.prepare(query) {
+            let model = HandshakeModel(timestamp: row[timestampColumn],
+                                       star: row[starColumn],
+                                       TXPowerlevel: row[TXPowerlevelColumn],
+                                       RSSI: row[RSSIColumn],
+                                       knownCaseId: row[associatedKnownCaseColumn])
+            handshakes.append(model)
+        }
+
+        let previousRequest: HandshakeRequest?
+        if request.offset > 0 {
+            let diff = request.offset - request.limit
+            let previousOffset = max(0, diff)
+            let previousLimit = request.limit + min(0, diff)
+            previousRequest = HandshakeRequest(filterOption: request.filterOption, offset: previousOffset, limit: previousLimit)
+        } else {
+            previousRequest = nil
+        }
+
+        let nextRequest: HandshakeRequest?
+        if handshakes.count < request.limit {
+            nextRequest = nil
+        } else {
+            let nextOffset = request.offset + request.limit
+            nextRequest = HandshakeRequest(filterOption: request.filterOption, offset: nextOffset, limit: request.limit)
+        }
+
+        HandshakeResponse(handshakes: handshakes, previousRequest: previousRequest, nextRequest: nextRequest)
+    }
 }
