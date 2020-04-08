@@ -3,8 +3,10 @@
 import Foundation
 
 /// Use this class to run code at each epoch change.
-struct EpochTracker {
+class EpochTracker {
     private let epochDidIncrement: () -> Void
+    
+    private var timer: Timer?
     
     init(epochDidIncrement: @escaping () -> Void)  {
         self.epochDidIncrement = epochDidIncrement
@@ -12,15 +14,20 @@ struct EpochTracker {
     }
     
     private func rescheduleTimer() {
-        Timer.scheduledTimer(withTimeInterval: {
+        self.timer = Timer.scheduledTimer(withTimeInterval: {
             let currentEpoch = Epoch.current
             let nextEpoch = currentEpoch.next
             let currentTimeinterval = Date().timeIntervalSince1970
             return nextEpoch.timestamp - currentTimeinterval
-        }(), repeats: false, block: { (_) in
-            self.epochDidIncrement()
-            self.rescheduleTimer()
+        }(), repeats: false, block: { [weak self] (_) in
+            self?.epochDidIncrement()
+            self?.rescheduleTimer()
         })
+    }
+    
+    /// Stops and invalidates the tracker.
+    func invalidate() {
+        self.timer?.invalidate()
     }
 }
 

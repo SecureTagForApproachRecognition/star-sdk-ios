@@ -15,14 +15,14 @@ class IdentityManager {
     /// Last nbStoredEpochs SKs, in chronological order. Last is current.
     /// Generated on first access, then persisted securely and rotated.
     /// Guarenteed to be non-empty
-    private var SKs: [SK] {
+    private var secretKeys: [SecretKey] {
         let persistenceKey = "SKs"
-        var sks: [SK] = {
-            if let persisted: [SK] = SecurePersistence.shared.object(key: persistenceKey) {
+        var sks: [SecretKey] = {
+            if let persisted: [SecretKey] = SecurePersistence.shared.object(key: persistenceKey) {
                 return persisted
             }
             #warning("TODO If Keychain access fails (device just rebooted for example) and we can't read the previously persisted keys, we are going to override them here.")
-            let initialSK = SK(epoch: Epoch.current, keyData: Utils.generateRandomKey(nbBits: GlobalParameters.SKNbBits))
+            let initialSK = SecretKey(epoch: Epoch.current, keyData: Utils.generateRandomKey(nbBytes: GlobalParameters.SecretKeyNbBytes))
             return [initialSK]
         }()
         let currentEpoch = Epoch.current
@@ -45,7 +45,7 @@ class IdentityManager {
     /// The EphID that corresponds to the current Epoch.
     /// See EpochTracker to know when epochs change.
     var currentEphID: EphID {
-        let currentSK = self.SKs.last! // doc says so
+        let currentSK = self.secretKeys.last! // doc says so
         if let cached = self.currentEphIDCache, cached.epoch == currentSK.epoch {
             return cached
         }
@@ -59,13 +59,13 @@ class IdentityManager {
 }
 
 /// Represents a secret key SK along with its corresponding epoch.
-struct SK: Codable, CustomStringConvertible {
+struct SecretKey: Codable, CustomStringConvertible {
     let epoch: Epoch
     let keyData: Data
     
-    var next: SK {
+    var next: SecretKey {
         let data = Utils.sha256(data: self.keyData)
-        return SK(epoch: self.epoch.next, keyData: data)
+        return SecretKey(epoch: self.epoch.next, keyData: data)
     }
     
     var description: String {
@@ -76,11 +76,11 @@ struct SK: Codable, CustomStringConvertible {
 private class Utils {
     /// Generates a random key using CommonCrypto.
     /// Assumes nbBits is a multiple of 8.
-    static func generateRandomKey(nbBits: Int) -> Data {
-        var bytes = [UInt8](repeating: UInt8(0), count: nbBits / 8)
+    static func generateRandomKey(nbBytes: Int) -> Data {
+        var bytes = [UInt8](repeating: UInt8(0), count: nbBytes)
         let statusCode = CCRandomGenerateBytes(&bytes, bytes.count)
         if statusCode != CCRNGStatus(kCCSuccess) {
-            fatalError("Cannot generate key of length \(nbBits) bits")
+            fatalError("Cannot generate key of length \(nbBytes) bytes")
         }
         return Data(bytes: bytes, count: bytes.count)
     }

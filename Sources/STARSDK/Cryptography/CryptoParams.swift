@@ -7,6 +7,6 @@ struct GlobalParameters {
     static let epochDuration: TimeInterval = 15.0 * 60.0
     static let nbStoredEpochs: UInt32 = 21
     
-    static let SKNbBits = 256
+    static let SecretKeyNbBytes = 32
     static let EphIDNbBytes = 16
 }
