@@ -17,10 +17,11 @@ public enum STARTracing {
     /// initialize the SDK
     /// - Parameter appId: application identifier used for the discovery call
     /// - Parameter enviroment: enviroment to use
-    public static func initialize(with appId: String, enviroment: Enviroment) throws {
+    public static func initialize(with appId: String, enviroment: Enviroment, mode: STARMode = .production) throws {
         guard instance == nil else {
             fatalError("STARSDK already initialized")
         }
+        STARMode.current = mode
         instance = try STARSDK(appId: appId, enviroment: enviroment)
     }
 
@@ -37,20 +38,18 @@ public enum STARTracing {
         }
     }
 
-    #if DEBUG
     /// The logger
-        public static var logger: LoggingDelegate? {
-            set {
-                guard instance != nil else {
-                    fatalError("STARSDK not initialized")
-                }
-                instance.logger = newValue
+    public static var logger: LoggingDelegate? {
+        set {
+            guard instance != nil else {
+                fatalError("STARSDK not initialized")
             }
-            get {
-                instance.logger
-            }
+            instance.logger = newValue
         }
-    #endif
+        get {
+            instance.logger
+        }
+    }
 
     /// Starts Bluetooth tracing
     public static func startTracing() throws {

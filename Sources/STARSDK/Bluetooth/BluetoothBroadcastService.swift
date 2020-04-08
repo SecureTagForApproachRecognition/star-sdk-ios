@@ -21,9 +21,7 @@ class BluetoothBroadcastService: NSObject {
     public weak var permissionDelegate: BluetoothPermissionDelegate?
 
     /// A logger to output messages
-    #if DEBUG
-        public weak var logger: LoggingDelegate?
-    #endif
+    public weak var logger: LoggingDelegate?
 
     /// The service ID for the current application
     private var serviceId: CBUUID? {
@@ -54,9 +52,7 @@ class BluetoothBroadcastService: NSObject {
     /// Start the broadcast service
     public func startService() {
         guard peripheralManager == nil else {
-            #if DEBUG
-                logger?.log("[Sender]: startService service already started")
-            #endif
+            logger?.log("[Sender]: startService service already started")
             return
         }
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: [
@@ -67,9 +63,8 @@ class BluetoothBroadcastService: NSObject {
 
     /// Stops the broadcast service
     public func stopService() {
-        #if DEBUG
-            logger?.log("[Sender]: stopping Services")
-        #endif
+        logger?.log("[Sender]: stopping Services")
+
         peripheralManager?.removeAllServices()
         peripheralManager?.stopAdvertising()
         service = nil
@@ -90,9 +85,8 @@ class BluetoothBroadcastService: NSObject {
                                                      permissions: .readable)
         service?.characteristics = [characteristic]
         peripheralManager?.add(service!)
-        #if DEBUG
-            logger?.log("[Sender]: added Service with \(serviceId.uuidString)")
-        #endif
+
+        logger?.log("[Sender]: added Service with \(serviceId.uuidString)")
     }
 }
 
@@ -100,9 +94,8 @@ class BluetoothBroadcastService: NSObject {
 
 extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        #if DEBUG
-            logger?.log(state: peripheral.state, prefix: "[Sender]: peripheralManagerDidUpdateState")
-        #endif
+        logger?.log(state: peripheral.state, prefix: "[Sender]: peripheralManagerDidUpdateState")
+
         switch peripheral.state {
         case .poweredOn where service == nil:
             addService()
@@ -116,9 +109,8 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error _: Error?) {
-        #if DEBUG
-            logger?.log(state: peripheral.state, prefix: "[Sender]: peripheralManagerdidAddservice")
-        #endif
+        logger?.log(state: peripheral.state, prefix: "[Sender]: peripheralManagerdidAddservice")
+
         peripheralManager?.startAdvertising([
             CBAdvertisementDataServiceUUIDsKey: [service.uuid],
             CBAdvertisementDataLocalNameKey: "",
@@ -126,12 +118,10 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
-        #if DEBUG
-            logger?.log(state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
-            if let error = error {
-                logger?.log("[Sender]: peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
-            }
-        #endif
+        logger?.log(state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+        if let error = error {
+            logger?.log("[Sender]: peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+        }
     }
 
     func peripheralManager(_: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
@@ -139,14 +129,10 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             let data = try starCrypto!.newTOTP()
             request.value = data
             peripheralManager?.respond(to: request, withResult: .success)
-            #if DEBUG
-                logger?.log("[Sender]: ← ✅ didReceiveRead: Responded with new token")
-            #endif
+            logger?.log("[Sender]: ← ✅ didReceiveRead: Responded with new token")
         } catch {
             peripheralManager?.respond(to: request, withResult: .unlikelyError)
-            #if DEBUG
-                logger?.log("[Sender]: ← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
-            #endif
+            logger?.log("[Sender]: ← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
         }
     }
 
@@ -154,9 +140,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         if let services: [CBMutableService] = dict[CBPeripheralManagerRestoredStateServicesKey] as? [CBMutableService],
             let service = services.first(where: { $0.uuid == serviceId }) {
             self.service = service
-            #if DEBUG
-                logger?.log("[Sender]: PeripheralManager#willRestoreState services :\(services.count)")
-            #endif
+            logger?.log("[Sender]: PeripheralManager#willRestoreState services :\(services.count)")
         }
     }
 }

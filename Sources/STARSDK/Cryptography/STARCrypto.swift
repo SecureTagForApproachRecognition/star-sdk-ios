@@ -8,9 +8,7 @@ class STARCrypto: STARCryptoProtocol {
     /// A tag to retreive the generated key from the keychain
     private let tag = "ch.ubique.starsdk.key"
     
-    #if DEBUG
-        private let debugIdentifier = "AA"
-    #endif
+    private let debugIdentifier = "AA"
 
     /// Initialize the algorithm. Can throw if a key cannot be generated
     init() throws {
@@ -35,14 +33,14 @@ class STARCrypto: STARCryptoProtocol {
         var counter : Int16 = Int16(secondsOfDay) / Int16(interval)
         let timestamp = Data(bytes: &counter, count: MemoryLayout<Int16>.size)
         let hmacValue = hmac(msg: timestamp, key: key)
-        
-        #if DEBUG
+
+        if STARMode.current == .calibration {
             let truncatedValue = hmacValue.subdata(in: 0..<20)
             return debugIdentifier.data(using: .utf8)! + timestamp + truncatedValue
-        #else
+        } else {
             let truncatedValue = hmacValue.subdata(in: 0..<24)
             return timestamp + truncatedValue
-        #endif
+        }
     }
 
     func validate(key: Data, star: Data) -> Bool {

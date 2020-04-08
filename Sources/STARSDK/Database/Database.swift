@@ -11,9 +11,7 @@ class STARDatabase {
     /// flag used to set Database as destroyed
     private(set) var isDestroyed = false
 
-    #if DEBUG
-        public weak var logger: LoggingDelegate?
-    #endif
+    public weak var logger: LoggingDelegate?
 
     /// application Storage
     private let _applicationStorage: ApplicationStorage
@@ -51,13 +49,13 @@ class STARDatabase {
         _handshakesStorage = try HandshakesStorage(database: connection, knownCasesStorage: _knownCasesStorage)
         _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
-        #if DEBUG
+        if STARMode.current == .calibration {
             connection.trace { [weak self] query in
                 DispatchQueue.main.async {
                     self?.logger?.log(query)
                 }
             }
-        #endif
+        }
     }
 
     /// Discard all data

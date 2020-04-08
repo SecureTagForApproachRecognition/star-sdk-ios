@@ -1,6 +1,7 @@
 import SnapKit
 import STARSDK
 import UIKit
+import os
 
 class ViewController: UIViewController {
     let startButton = UIButton()
@@ -164,7 +165,7 @@ class ViewController: UIViewController {
 
 extension ViewController: LoggingDelegate {
     func log(_ string: String) {
-        print(string)
+        os_log("%@", string)
         logs = logs + "\n" + Date().stringVal + string
     }
 }

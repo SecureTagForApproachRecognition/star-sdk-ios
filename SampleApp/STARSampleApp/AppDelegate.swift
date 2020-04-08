@@ -1,5 +1,6 @@
 import STARSDK
 import UIKit
+import os
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -9,7 +10,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var logs: String
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        try! STARTracing.initialize(with: "ch.ubique.nextstep", enviroment: .dev)
+        try! STARTracing.initialize(with: "ch.ubique.nextstep", enviroment: .dev, mode: .calibration)
 
         if application.applicationState != .background {
             initWindow()
@@ -56,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 extension AppDelegate: LoggingDelegate {
     func log(_ string: String) {
-        print(string)
+        os_log("%@", string)
         logs = logs + "\n" + Date().stringVal + string
     }
 }

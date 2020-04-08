@@ -38,16 +38,17 @@ class STARSDK {
     /// delegate
     public weak var delegate: STARTracingDelegate?
 
-    #if DEBUG
     /// The logger
-        public weak var logger: LoggingDelegate? {
-            didSet {
-                broadcaster.logger = logger
-                discoverer.logger = logger
-                database.logger = logger
+    public weak var logger: LoggingDelegate? {
+        didSet {
+            guard STARMode.current == .calibration else {
+                fatalError("logger is only usable in calibration mode")
             }
+            broadcaster.logger = logger
+            discoverer.logger = logger
+            database.logger = logger
         }
-    #endif
+    }
 
     /// keeps track of  SDK state
     private var state: TracingState {
