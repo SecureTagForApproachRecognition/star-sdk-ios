@@ -7,6 +7,10 @@ class STARCrypto: STARCryptoProtocol {
     private let interval: Int32 = 60
     /// A tag to retreive the generated key from the keychain
     private let tag = "ch.ubique.starsdk.key"
+    
+    #if DEBUG
+        private let debugIdentifier = "AA"
+    #endif
 
     /// Initialize the algorithm. Can throw if a key cannot be generated
     init() throws {
@@ -22,10 +26,23 @@ class STARCrypto: STARCryptoProtocol {
 
     func newTOTP() throws -> Data {
         let key = try getSecretKey()
-        var counter = Int32(Date().timeIntervalSince1970) / interval
-        let timestamp = Data(bytes: &counter, count: MemoryLayout<Int32>.size)
+        let date = Date()
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let components = calendar.dateComponents([.hour,.minute,.second], from: date)
+        let secondsOfDay = components.hour!*3600 + components.minute! * 60 + components.second!
+        
+        var counter : Int16 = Int16(secondsOfDay) / Int16(interval)
+        let timestamp = Data(bytes: &counter, count: MemoryLayout<Int16>.size)
         let hmacValue = hmac(msg: timestamp, key: key)
-        return timestamp + hmacValue
+        
+        #if DEBUG
+            let truncatedValue = hmacValue.subdata(in: 0..<20)
+            return debugIdentifier.data(using: .utf8)! + timestamp + truncatedValue
+        #else
+            let truncatedValue = hmacValue.subdata(in: 0..<24)
+            return timestamp + truncatedValue
+        #endif
     }
 
     func validate(key: Data, star: Data) -> Bool {
