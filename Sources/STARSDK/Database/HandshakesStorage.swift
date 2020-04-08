@@ -99,14 +99,15 @@ class HandshakesStorage {
     }
 
     struct HandshakeRequest {
-        enum FilterOption {
-            case none
-            case tokenStartWith(Data)
+
+        struct FilterOption: OptionSet {
+            let rawValue: Int
+            static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
         }
         let filterOption: FilterOption
         let offset: Int
         let limit: Int
-        init(filterOption: FilterOption = .none, offset: Int = 0, limit: Int = 50) {
+        init(filterOption: FilterOption = [], offset: Int = 0, limit: Int = 50) {
             self.filterOption = filterOption
             self.offset = offset
             self.limit = limit
@@ -133,11 +134,8 @@ class HandshakesStorage {
         assert(request.offset >= 0, "Offset must be positive")
 
         var query = table.limit(request.limit, offset: request.offset).order(timestampColumn.desc)
-        switch request.filterOption {
-        case .none:
-            break
-        case .tokenStartWith(let tokenStart):
-            query = query.filter(starColumn == tokenStart)
+        if request.filterOption.contains(.hasKnownCaseAssociated) {
+            query = query.filter(associatedKnownCaseColumn != nil)
         }
 
         var handshakes = Array<HandshakeModel>()
