@@ -103,10 +103,10 @@ class HandshakesStorage {
             case none
             case tokenStartWith(Data)
         }
-        let filterOption: FilterOption = .none
-        let offset: Int = 0
-        let limit: Int = 1000
-        init(filterOption: FilterOption = .none, offset: Int = 0, limit: Int = 1000) {
+        let filterOption: FilterOption
+        let offset: Int
+        let limit: Int
+        init(filterOption: FilterOption = .none, offset: Int = 0, limit: Int = 50) {
             self.filterOption = filterOption
             self.offset = offset
             self.limit = limit
@@ -114,13 +114,17 @@ class HandshakesStorage {
     }
 
     struct HandshakeResponse {
+        let offset: Int
+        let limit: Int
         let handshakes: [HandshakeModel]
         let previousRequest: HandshakeRequest?
         let nextRequest: HandshakeRequest?
-        fileprivate init(handshakes: [HandshakeModel], previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
+        fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
             self.handshakes = handshakes
             self.previousRequest = previousRequest
             self.nextRequest = nextRequest
+            self.offset = offset
+            self.limit = limit
         }
     }
 
@@ -165,6 +169,6 @@ class HandshakesStorage {
             nextRequest = HandshakeRequest(filterOption: request.filterOption, offset: nextOffset, limit: request.limit)
         }
 
-        HandshakeResponse(handshakes: handshakes, previousRequest: previousRequest, nextRequest: nextRequest)
+        return HandshakeResponse(handshakes: handshakes, offset: request.offset, limit: request.limit, previousRequest: previousRequest, nextRequest: nextRequest)
     }
 }
