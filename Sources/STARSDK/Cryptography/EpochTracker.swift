@@ -2,8 +2,8 @@
 
 import Foundation
 
+/// Use this class to run code at each epoch change.
 struct EpochTracker {
-    
     private let epochDidIncrement: () -> Void
     
     init(epochDidIncrement: @escaping () -> Void)  {

@@ -42,6 +42,8 @@ class IdentityManager {
     
     private var currentEphIDCache: EphID?
     
+    /// The EphID that corresponds to the current Epoch.
+    /// See EpochTracker to know when epochs change.
     var currentEphID: EphID {
         let currentSK = self.SKs.last! // doc says so
         if let cached = self.currentEphIDCache, cached.epoch == currentSK.epoch {
@@ -56,6 +58,7 @@ class IdentityManager {
     }
 }
 
+/// Represents a secret key SK along with its corresponding epoch.
 struct SK: Codable, CustomStringConvertible {
     let epoch: Epoch
     let keyData: Data
