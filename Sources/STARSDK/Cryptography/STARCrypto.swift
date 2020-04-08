@@ -25,19 +25,19 @@ class STARCrypto: STARCryptoProtocol {
         let date = Date()
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "UTC")!
-        let components = calendar.dateComponents([.hour,.minute,.second], from: date)
-        let secondsOfDay = components.hour!*3600 + components.minute! * 60 + components.second!
-        
-        var counter : UInt16 = UInt16(secondsOfDay / interval)
+        let components = calendar.dateComponents([.hour, .minute, .second], from: date)
+        let secondsOfDay = components.hour! * 3600 + components.minute! * 60 + components.second!
+
+        var counter: UInt16 = UInt16(secondsOfDay / interval)
         let timestamp = Data(bytes: &counter, count: MemoryLayout<UInt16>.size)
         let hmacValue = hmac(msg: timestamp, key: key)
 
         switch STARMode.current {
         case let .calibration(identifierPrefix):
-            let truncatedValue = hmacValue.subdata(in: 0..<20)
+            let truncatedValue = hmacValue.subdata(in: 0 ..< 20)
             return identifierPrefix.data(using: .utf8)! + timestamp + truncatedValue
         default:
-            let truncatedValue = hmacValue.subdata(in: 0..<24)
+            let truncatedValue = hmacValue.subdata(in: 0 ..< 24)
             return timestamp + truncatedValue
         }
     }

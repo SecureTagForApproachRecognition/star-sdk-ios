@@ -52,7 +52,7 @@ class BluetoothBroadcastService: NSObject {
     /// Start the broadcast service
     public func startService() {
         guard peripheralManager == nil else {
-            logger?.log("[Sender]: startService service already started")
+            logger?.log(type: .sender, "startService service already started")
             return
         }
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: [
@@ -63,7 +63,7 @@ class BluetoothBroadcastService: NSObject {
 
     /// Stops the broadcast service
     public func stopService() {
-        logger?.log("[Sender]: stopping Services")
+        logger?.log(type: .sender, "stopping Services")
 
         peripheralManager?.removeAllServices()
         peripheralManager?.stopAdvertising()
@@ -86,7 +86,7 @@ class BluetoothBroadcastService: NSObject {
         service?.characteristics = [characteristic]
         peripheralManager?.add(service!)
 
-        logger?.log("[Sender]: added Service with \(serviceId.uuidString)")
+        logger?.log(type: .sender, "added Service with \(serviceId.uuidString)")
     }
 }
 
@@ -94,7 +94,7 @@ class BluetoothBroadcastService: NSObject {
 
 extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        logger?.log(state: peripheral.state, prefix: "[Sender]: peripheralManagerDidUpdateState")
+        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidUpdateState")
 
         switch peripheral.state {
         case .poweredOn where service == nil:
@@ -109,7 +109,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error _: Error?) {
-        logger?.log(state: peripheral.state, prefix: "[Sender]: peripheralManagerdidAddservice")
+        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerdidAddservice")
 
         peripheralManager?.startAdvertising([
             CBAdvertisementDataServiceUUIDsKey: [service.uuid],
@@ -118,9 +118,9 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
-        logger?.log(state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
         if let error = error {
-            logger?.log("[Sender]: peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+            logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
         }
     }
 
@@ -129,10 +129,10 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             let data = try starCrypto!.newTOTP()
             request.value = data
             peripheralManager?.respond(to: request, withResult: .success)
-            logger?.log("[Sender]: ← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
+            logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
         } catch {
             peripheralManager?.respond(to: request, withResult: .unlikelyError)
-            logger?.log("[Sender]: ← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
+            logger?.log(type: .sender, "← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
         }
     }
 
@@ -140,7 +140,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         if let services: [CBMutableService] = dict[CBPeripheralManagerRestoredStateServicesKey] as? [CBMutableService],
             let service = services.first(where: { $0.uuid == serviceId }) {
             self.service = service
-            logger?.log("[Sender]: PeripheralManager#willRestoreState services :\(services.count)")
+            logger?.log(type: .sender, "PeripheralManager#willRestoreState services :\(services.count)")
         }
     }
 }

@@ -41,6 +41,13 @@ class STARDatabase {
         return _peripheralStorage
     }
 
+    /// logging Storage
+    private let _logggingStorage: LoggingStorage
+    var loggingStorage: LoggingStorage {
+        guard !isDestroyed else { fatalError("Database is destroyed") }
+        return _logggingStorage
+    }
+
     /// Initializer
     init() throws {
         let fileName = STARDatabase.getDatabasePath()
@@ -49,13 +56,7 @@ class STARDatabase {
         _handshakesStorage = try HandshakesStorage(database: connection, knownCasesStorage: _knownCasesStorage)
         _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
-        if STARMode.current != .production {
-            connection.trace { [weak self] query in
-                DispatchQueue.main.async {
-                    self?.logger?.log(query)
-                }
-            }
-        }
+        _logggingStorage = try LoggingStorage(database: connection)
     }
 
     /// Discard all data
