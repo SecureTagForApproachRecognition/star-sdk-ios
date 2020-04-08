@@ -15,6 +15,10 @@ let package = Package(
             name: "STARSDK",
             targets: ["STARSDK"]
         ),
+        .library(
+            name: "STARSDK_CALIBRATION",
+            targets: ["STARSDK_CALIBRATION"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -27,6 +31,11 @@ let package = Package(
         .target(
             name: "STARSDK",
             dependencies: ["SQLite"]
+        ),
+        .target(
+            name: "STARSDK_CALIBRATION",
+            dependencies: ["SQLite"],
+            swiftSettings: [.define("CALIBRATION")]
         ),
         .testTarget(
             name: "STARSDKTests",

@@ -1,4 +1,4 @@
-import STARSDK
+import STARSDK_CALIBRATION
 import UIKit
 import os
 

@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		488B70A5243213630068DE85 /* STARSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 488B70A4243213630068DE85 /* STARSDK */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
 		F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC58243E02A1005F26AE /* ControlViewController.swift */; };
 		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
 		F812AC5D243E02B9005F26AE /* HandshakeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5C243E02B9005F26AE /* HandshakeViewController.swift */; };
+		F812AC5F243E08BF005F26AE /* STARSDK_CALIBRATION in Frameworks */ = {isa = PBXBuildFile; productRef = F812AC5E243E08BF005F26AE /* STARSDK_CALIBRATION */; };
 		F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE139242DDC450043FA1E /* AppDelegate.swift */; };
 		F83BE13E242DDC450043FA1E /* LogsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE13D242DDC450043FA1E /* LogsViewController.swift */; };
 		F83BE143242DDC460043FA1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F83BE142242DDC460043FA1E /* Assets.xcassets */; };
@@ -40,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				488B70A5243213630068DE85 /* STARSDK in Frameworks */,
+				F812AC5F243E08BF005F26AE /* STARSDK_CALIBRATION in Frameworks */,
 				F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,7 +108,7 @@
 			name = STARSampleApp;
 			packageProductDependencies = (
 				F83BE14F242DDFF60043FA1E /* SnapKit */,
-				488B70A4243213630068DE85 /* STARSDK */,
+				F812AC5E243E08BF005F26AE /* STARSDK_CALIBRATION */,
 			);
 			productName = CovidTracingTestApp;
 			productReference = F83BE136242DDC450043FA1E /* STARSampleApp.app */;
@@ -382,9 +382,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		488B70A4243213630068DE85 /* STARSDK */ = {
+		F812AC5E243E08BF005F26AE /* STARSDK_CALIBRATION */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = STARSDK;
+			productName = STARSDK_CALIBRATION;
 		};
 		F83BE14F242DDFF60043FA1E /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
