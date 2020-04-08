@@ -151,10 +151,23 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
                 logger?.log("[Receiver]: TX-Power not available")
             #endif
         }
+
         updateDistanceForPeripheral(peripheral, rssi: RSSI)
-        try? storage.setDiscovery(uuid: peripheral.identifier)
-        pendingPeripherals.append(peripheral)
-        central.connect(peripheral, options: nil)
+
+        if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
+        manuData.count == 36 { // TODO: add validation of manufacturer data, not only based on bytecount
+            try? delegate?.didDiscover(data: manuData, distance: distancesCache[peripheral.identifier])
+            #if DEBUG
+            logger?.log("[Receiver]: got Manufacturer Data \(manuData.hexEncodedString)")
+            #endif
+        } else {
+            // Only connect if we didn't got manufacturer data
+            // we only get the manufacturer if iOS is activly scanning
+            // otherwise we have to connect to the peripheral and read the characteristics
+            try? storage.setDiscovery(uuid: peripheral.identifier)
+            pendingPeripherals.append(peripheral)
+            central.connect(peripheral, options: nil)
+        }
     }
 
     /// Calcualte and update the distance for a peripheral
@@ -320,9 +333,8 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
         }
 
         #if DEBUG
-            logger?.log("[Receiver]: → ✅ Received (\(data.count) bytes) from \(peripheral.identifier) at \(Date())")
+        logger?.log("[Receiver]: → ✅ Received (\(data.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
         #endif
-        try? delegate?.didDiscover(data: data, distance: distancesCache[peripheral.identifier])
         manager?.cancelPeripheralConnection(peripheral)
     }
 
@@ -347,3 +359,11 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
         }
     }
 }
+
+#if DEBUG
+fileprivate extension Data {
+    var hexEncodedString: String {
+        return map { String(format: "%02hhx ", $0) }.joined()
+    }
+}
+#endif
