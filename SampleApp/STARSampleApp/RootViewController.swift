@@ -1,22 +1,21 @@
 //
-//  RootViewController.swift
-//  STARSampleApp
-//
-//  Created by Stefan Mitterrutzner on 08.04.20.
-//  Copyright © 2020 Ubique. All rights reserved.
-//
+
 
 import UIKit
 
 class RootViewController: UITabBarController {
 
-    lazy var logsViewController = LogsViewController()
-    lazy var secondViewController = UIViewController()
+    var logsViewController = LogsViewController()
+    var controlsViewController = ControlViewController()
+    var parameterViewController = ParametersViewController()
+    var handshakeViewController = HandshakeViewController()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        secondViewController.title = "second"
-        viewControllers = [logsViewController, secondViewController]
+        viewControllers = [controlsViewController,
+                           logsViewController,
+                           parameterViewController,
+                           handshakeViewController]
     }
 
 }

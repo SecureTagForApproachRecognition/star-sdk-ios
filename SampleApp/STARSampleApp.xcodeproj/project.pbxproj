@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		488B70A5243213630068DE85 /* STARSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 488B70A4243213630068DE85 /* STARSDK */; };
 		F812AC56243DF459005F26AE /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC55243DF459005F26AE /* RootViewController.swift */; };
+		F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC58243E02A1005F26AE /* ControlViewController.swift */; };
+		F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5A243E02AF005F26AE /* ParametersViewController.swift */; };
+		F812AC5D243E02B9005F26AE /* HandshakeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F812AC5C243E02B9005F26AE /* HandshakeViewController.swift */; };
 		F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE139242DDC450043FA1E /* AppDelegate.swift */; };
 		F83BE13E242DDC450043FA1E /* LogsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83BE13D242DDC450043FA1E /* LogsViewController.swift */; };
 		F83BE143242DDC460043FA1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F83BE142242DDC460043FA1E /* Assets.xcassets */; };
@@ -19,6 +22,9 @@
 
 /* Begin PBXFileReference section */
 		F812AC55243DF459005F26AE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		F812AC58243E02A1005F26AE /* ControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlViewController.swift; sourceTree = "<group>"; };
+		F812AC5A243E02AF005F26AE /* ParametersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParametersViewController.swift; sourceTree = "<group>"; };
+		F812AC5C243E02B9005F26AE /* HandshakeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandshakeViewController.swift; sourceTree = "<group>"; };
 		F83BE136242DDC450043FA1E /* STARSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = STARSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83BE139242DDC450043FA1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F83BE13D242DDC450043FA1E /* LogsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsViewController.swift; sourceTree = "<group>"; };
@@ -64,8 +70,11 @@
 			children = (
 				F83BE139242DDC450043FA1E /* AppDelegate.swift */,
 				F848B957242E2FF1000B50F6 /* UserDefault.swift */,
-				F83BE13D242DDC450043FA1E /* LogsViewController.swift */,
 				F812AC55243DF459005F26AE /* RootViewController.swift */,
+				F83BE13D242DDC450043FA1E /* LogsViewController.swift */,
+				F812AC58243E02A1005F26AE /* ControlViewController.swift */,
+				F812AC5A243E02AF005F26AE /* ParametersViewController.swift */,
+				F812AC5C243E02B9005F26AE /* HandshakeViewController.swift */,
 				F83BE142242DDC460043FA1E /* Assets.xcassets */,
 				F83BE144242DDC460043FA1E /* LaunchScreen.storyboard */,
 				F83BE147242DDC460043FA1E /* Info.plist */,
@@ -161,7 +170,10 @@
 				F83BE13E242DDC450043FA1E /* LogsViewController.swift in Sources */,
 				F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */,
 				F848B958242E2FF1000B50F6 /* UserDefault.swift in Sources */,
+				F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */,
+				F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */,
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,
+				F812AC5D243E02B9005F26AE /* HandshakeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
