@@ -52,7 +52,7 @@ class STARMatcher {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension STARMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data: Data, distance: Double?) throws {
+    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws {
         var matchingKnownCaseId = try database.handshakesStorage.starExists(star: data)
 
         if matchingKnownCaseId == nil {
@@ -67,7 +67,8 @@ extension STARMatcher: BluetoothDiscoveryDelegate {
 
         let handshake = HandshakeModel(timestamp: Date(),
                                        star: data,
-                                       distance: distance,
+                                       TXPowerlevel: TXPowerlevel,
+                                       RSSI: RSSI,
                                        knownCaseId: matchingKnownCaseId)
         try database.handshakesStorage.add(handshake: handshake)
 

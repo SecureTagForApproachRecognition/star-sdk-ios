@@ -15,7 +15,8 @@ class HandshakesStorage {
     let idColumn = Expression<Int>("id")
     let timestampColumn = Expression<Date>("timestamp")
     let starColumn = Expression<Data>("star")
-    let distanceColumn = Expression<Double?>("distance")
+    let TXPowerlevelColumn = Expression<Double?>("tx_power_level")
+    let RSSIColumn = Expression<Double?>("rssi")
     let associatedKnownCaseColumn = Expression<Int?>("associated_known_case")
 
     /// Initializer
@@ -34,7 +35,8 @@ class HandshakesStorage {
             t.column(timestampColumn)
             t.column(starColumn)
             t.column(associatedKnownCaseColumn)
-            t.column(distanceColumn)
+            t.column(TXPowerlevelColumn)
+            t.column(RSSIColumn)
             t.foreignKey(associatedKnownCaseColumn, references: knownCasesStorage.table, knownCasesStorage.idColumn, delete: .setNull)
         })
     }
@@ -58,7 +60,8 @@ class HandshakesStorage {
             timestampColumn <- h.timestamp,
             starColumn <- h.star,
             associatedKnownCaseColumn <- h.knownCaseId,
-            distanceColumn <- h.distance
+            TXPowerlevelColumn <- h.TXPowerlevel,
+            RSSIColumn <- h.RSSI
         )
         try database.run(insert)
     }
@@ -81,7 +84,8 @@ class HandshakesStorage {
             guard row[associatedKnownCaseColumn] == nil else { continue }
             let model = HandshakeModel(timestamp: row[timestampColumn],
                                        star: row[starColumn],
-                                       distance: row[distanceColumn],
+                                       TXPowerlevel: row[TXPowerlevelColumn],
+                                       RSSI: row[RSSIColumn],
                                        knownCaseId: nil)
             if !block(model, row[idColumn]) {
                 break

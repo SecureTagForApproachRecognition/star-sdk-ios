@@ -7,8 +7,9 @@ protocol BluetoothDiscoveryDelegate: class {
     /// The discovery service did discover some data and calculated the distance of the source
     /// - Parameters:
     ///   - data: The data received
-    ///   - distance: The distance to the emitter
-    func didDiscover(data: Data, distance: Double?) throws
+    ///   - TXPowerlevel: The TX Power level of both connection devices
+    ///   - RSSI: The RSSI of both connection devices
+    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws
 }
 
 /// A delegate that can react to bluetooth permission requests

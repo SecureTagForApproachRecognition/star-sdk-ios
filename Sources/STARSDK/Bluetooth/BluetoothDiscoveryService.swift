@@ -3,8 +3,6 @@ import Foundation
 
 /// The discovery service responsible of scanning for nearby bluetooth devices offering the STAR service
 class BluetoothDiscoveryService: NSObject {
-    // iOS sends at 12bm? Android seems to vary between -1dbm (HIGH_POWER) and -21dbm (LOW_POWER)
-    private var defaultPower = 12.0
 
     /// The manager
     private var manager: CBCentralManager?
@@ -28,10 +26,10 @@ class BluetoothDiscoveryService: NSObject {
     private var peripheralsToDiscard: [CBPeripheral]?
 
     /// Transmission power levels per discovered peripheral
-    private var powerLevels: [UUID: Double] = [:]
+    private var powerLevelsCache: [UUID: Double] = [:]
 
     /// The computed distance from the discovered peripherals
-    private var distancesCache: [UUID: Double] = [:]
+    private var RSSICache: [UUID: Double] = [:]
 
     /// All service ID to scan for
     private var serviceIds: [CBUUID] = [] {
@@ -127,16 +125,16 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         logger?.log("[Receiver]: didDiscover: \(peripheral), rssi: \(RSSI)db")
         if let power = advertisementData[CBAdvertisementDataTxPowerLevelKey] as? Double {
             logger?.log("[Receiver]: found TX-Power in Advertisment data: \(power)")
-            powerLevels[peripheral.identifier] = power
+            powerLevelsCache[peripheral.identifier] = power
         } else {
             logger?.log("[Receiver]: TX-Power not available")
         }
-
-        updateDistanceForPeripheral(peripheral, rssi: RSSI)
+        RSSICache[peripheral.identifier] = Double(truncating: RSSI)
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
         manuData.count == 36 { // TODO: add validation of manufacturer data, not only based on bytecount
-            try? delegate?.didDiscover(data: manuData, distance: distancesCache[peripheral.identifier])
+            let id = peripheral.identifier
+            try? delegate?.didDiscover(data: manuData, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
             logger?.log("[Receiver]: got Manufacturer Data \(manuData.hexEncodedString)")
         } else {
             // Only connect if we didn't got manufacturer data
@@ -146,19 +144,6 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             pendingPeripherals.append(peripheral)
             central.connect(peripheral, options: nil)
         }
-    }
-
-    /// Calcualte and update the distance for a peripheral
-    /// - Parameters:
-    ///   - peripheral: The peripheral in question
-    ///   - RSSI: The RSSI
-    private func updateDistanceForPeripheral(_ peripheral: CBPeripheral, rssi RSSI: NSNumber) {
-        let power = powerLevels[peripheral.identifier] ?? defaultPower
-
-        let distance = pow(10, (power - Double(truncating: RSSI)) / 20)
-        distancesCache[peripheral.identifier] = distance / 1000
-        let distString = String(format: "%.2fm", distance / 1000)
-        logger?.log("[Receiver]: 📏 estimated distance is \(distString)")
     }
 
     func centralManager(_: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -243,7 +228,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error _: Error?) {
-        updateDistanceForPeripheral(peripheral, rssi: RSSI)
+        RSSICache[peripheral.identifier] = Double(truncating: RSSI)
     }
 }
 
@@ -282,6 +267,9 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
 
         logger?.log("[Receiver]: → ✅ Received (\(data.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
         manager?.cancelPeripheralConnection(peripheral)
+
+        let id = peripheral.identifier
+        try? delegate?.didDiscover(data: data, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
