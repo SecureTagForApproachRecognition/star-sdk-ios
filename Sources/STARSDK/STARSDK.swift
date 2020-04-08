@@ -264,6 +264,8 @@ class STARSDK {
     /// reset the SDK
     func reset() throws {
         stopTracing()
+        Default.shared.lastSync = nil
+        Default.shared.infectionStatus = .healthy
         try database.emptyStorage()
         try database.destroyDatabase()
     }

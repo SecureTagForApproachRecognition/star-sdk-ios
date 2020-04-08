@@ -37,6 +37,7 @@ class LogsViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         title = "LOGSv2"
         self.loadLogs()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -54,6 +55,11 @@ class LogsViewController: UIViewController {
         tableView.dataSource = self
         refreshControl.addTarget(self, action: #selector(reloadLogs), for: .allEvents)
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(share))
+    }
+
+    @objc func didClearData(notification: Notification) {
+        logs = []
+        self.tableView.reloadData()
     }
 
     @objc func share(){

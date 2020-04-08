@@ -6,7 +6,6 @@ import STARSDK_CALIBRATION
 
 class RootViewController: UITabBarController {
 
-    var legacyViewController = LegacyViewController()
     var logsViewController = LogsViewController()
     var controlsViewController = ControlViewController()
     var parameterViewController = ParametersViewController()
@@ -14,7 +13,6 @@ class RootViewController: UITabBarController {
 
     lazy var tabs: [UIViewController] = [controlsViewController,
                                             logsViewController,
-                                            legacyViewController,
                                             parameterViewController,
                                             handshakeViewController]
 
@@ -29,19 +27,19 @@ class RootViewController: UITabBarController {
 
 extension RootViewController: STARTracingDelegate {
     func STARTracingStateChanged(_ state: TracingState) {
-        self.viewControllers?
+        self.tabs
             .compactMap{$0 as? STARTracingDelegate}
             .forEach{ $0.STARTracingStateChanged(state) }
     }
 
     func errorOccured(_ error: STARTracingErrors) {
-        self.viewControllers?
+        self.tabs
         .compactMap{$0 as? STARTracingDelegate}
         .forEach{ $0.errorOccured(error) }
     }
 
     func didAddLog(_ entry: LogEntry) {
-        self.viewControllers?
+        self.tabs
         .compactMap{$0 as? STARTracingDelegate}
         .forEach{ $0.didAddLog(entry) }
     }

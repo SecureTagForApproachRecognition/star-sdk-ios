@@ -66,6 +66,7 @@ class STARDatabase {
             try handshakesStorage.emptyStorage()
             try knownCasesStorage.emptyStorage()
             try peripheralStorage.emptyStorage()
+            try loggingStorage.emptyStorage()
         }
     }
 
