@@ -3,7 +3,7 @@ import STARSDK
 import UIKit
 import os
 
-class ViewController: UIViewController {
+class LogsViewController: UIViewController {
     let startButton = UIButton()
     let stopButton = UIButton()
     let clearButton = UIButton()
@@ -23,6 +23,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .lightGray
+
+        title = "Logs"
 
         setupLayout()
 
@@ -163,14 +165,14 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: LoggingDelegate {
+extension LogsViewController: LoggingDelegate {
     func log(_ string: String) {
         os_log("%@", string)
         logs = logs + "\n" + Date().stringVal + string
     }
 }
 
-extension ViewController: STARTracingDelegate {
+extension LogsViewController: STARTracingDelegate {
     func STARTracingStateChanged(_ state: TracingState) {
         handshakeCountLabel.text = "Handshakes: \(state.numberOfHandshakes) \n Infected: \(state.infectionStatus.string) \n \(state.lastSync?.timeIntervalSinceNow ?? 0.0)"
     }
