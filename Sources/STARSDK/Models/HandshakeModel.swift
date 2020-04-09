@@ -1,17 +1,17 @@
 import Foundation
 
 /// A model for the digital handshake
-struct HandshakeModel {
+public struct HandshakeModel {
     /// The timestamp of the handshake
-    let timestamp: Date
+    public let timestamp: Date
     /// The STAR token exchanged during the handshake
-    let star: Data
+    public let star: Data
     /// The TX Power Level of both handshaking parties
-    let TXPowerlevel: Double?
+    public let TXPowerlevel: Double?
     /// The RSSI of both handshaking parties
-    let RSSI: Double?
+    public let RSSI: Double?
     /// If the handshake is associated with a known exposed case
-    let knownCaseId: Int?
+    public let knownCaseId: Int?
 
     // iOS sends at 12bm? Android seems to vary between -1dbm (HIGH_POWER) and -21dbm (LOW_POWER)
     private let defaultPower = 12.0
@@ -20,7 +20,7 @@ struct HandshakeModel {
     /// - Parameters:
     ///   - peripheral: The peripheral in question
     ///   - RSSI: The RSSI
-    var distance: Double? {
+    public var distance: Double? {
         guard let RSSI = RSSI else {
             return nil
         }

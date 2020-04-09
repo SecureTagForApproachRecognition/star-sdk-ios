@@ -15,7 +15,7 @@ class RootViewController: UITabBarController {
         viewControllers = [controlsViewController,
                            logsViewController,
                            parameterViewController,
-                           handshakeViewController]
+                           UINavigationController(rootViewController: handshakeViewController)]
     }
 
 }

@@ -268,6 +268,14 @@ class STARSDK {
         try database.emptyStorage()
         try database.destroyDatabase()
     }
+
+    func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
+        try database.handshakesStorage.getHandshakes(request)
+    }
+
+    func numberOfHandshakes() throws -> Int {
+        try database.handshakesStorage.numberOfHandshakes()
+    }
 }
 
 // MARK: STARMatcherDelegate implementation

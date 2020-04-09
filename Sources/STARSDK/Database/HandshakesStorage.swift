@@ -98,41 +98,8 @@ class HandshakesStorage {
         try database.run(table.delete())
     }
 
-    struct HandshakeRequest {
-
-        struct FilterOption: OptionSet {
-            let rawValue: Int
-            static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
-        }
-        enum SortingOption {
-            case ascendingTimestamp
-            case descendingTimestamp
-        }
-        let filterOption: FilterOption
-        let sortingOption: SortingOption
-        let offset: Int
-        let limit: Int
-        init(filterOption: FilterOption = [], sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int = 50) {
-            self.filterOption = filterOption
-            self.sortingOption = sortingOption
-            self.offset = offset
-            self.limit = limit
-        }
-    }
-
-    struct HandshakeResponse {
-        let offset: Int
-        let limit: Int
-        let handshakes: [HandshakeModel]
-        let previousRequest: HandshakeRequest?
-        let nextRequest: HandshakeRequest?
-        fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
-            self.handshakes = handshakes
-            self.previousRequest = previousRequest
-            self.nextRequest = nextRequest
-            self.offset = offset
-            self.limit = limit
-        }
+    func numberOfHandshakes() throws -> Int {
+        try database.scalar(table.count)
     }
 
     func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
@@ -185,5 +152,45 @@ class HandshakesStorage {
         }
 
         return HandshakeResponse(handshakes: handshakes, offset: request.offset, limit: request.limit, previousRequest: previousRequest, nextRequest: nextRequest)
+    }
+}
+
+public struct HandshakeRequest {
+
+    public struct FilterOption: OptionSet {
+        public let rawValue: Int
+        public static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+    }
+    public enum SortingOption {
+        case ascendingTimestamp
+        case descendingTimestamp
+    }
+    public let filterOption: FilterOption
+    public let sortingOption: SortingOption
+    public let offset: Int
+    public let limit: Int
+    public init(filterOption: FilterOption = [], sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int = 30) {
+        self.filterOption = filterOption
+        self.sortingOption = sortingOption
+        self.offset = offset
+        self.limit = limit
+    }
+}
+
+public struct HandshakeResponse {
+    public let offset: Int
+    public let limit: Int
+    public let handshakes: [HandshakeModel]
+    public let previousRequest: HandshakeRequest?
+    public let nextRequest: HandshakeRequest?
+    fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
+        self.handshakes = handshakes
+        self.previousRequest = previousRequest
+        self.nextRequest = nextRequest
+        self.offset = offset
+        self.limit = limit
     }
 }

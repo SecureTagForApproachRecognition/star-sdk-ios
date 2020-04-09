@@ -123,4 +123,12 @@ public enum STARTracing {
         try instance.reset()
         instance = nil
     }
+
+    public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
+        try instance.getHandshakes(request: request)
+    }
+
+    public static func numberOfHandshakes() throws -> Int {
+        try instance.numberOfHandshakes()
+    }
 }
