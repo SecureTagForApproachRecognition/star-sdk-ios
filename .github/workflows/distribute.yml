@@ -27,7 +27,8 @@ jobs:
         APPCENTER_APP_NAME: ${{ secrets.APPCENTER_APP_NAME }}
         APPCENTER_OWNER_NAME:  ${{ secrets.APPCENTER_OWNER_NAME }}
         APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
+        APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
       run: |
-        fastlane distribute --verbose
+        fastlane distribute
       working-directory: SampleApp
 
