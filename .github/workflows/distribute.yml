@@ -29,6 +29,6 @@ jobs:
         APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
         APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
       run: |
-        fastlane distribute
+        fastlane distribute --verbose
       working-directory: SampleApp
 
