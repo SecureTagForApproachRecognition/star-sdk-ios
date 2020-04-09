@@ -7,6 +7,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        STARTracing.reconnectionDelay = Default.shared.reconnectionDelay
         try! STARTracing.initialize(with: "ch.ubique.starsdk.sample", enviroment: .dev, mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? "AAAA"))
 
         if application.applicationState != .background {

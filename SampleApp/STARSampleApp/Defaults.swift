@@ -16,4 +16,13 @@ class Default {
             store.set(newValue, forKey: "ch.ubique.starsdk.sampleapp.identifierPrefix")
         }
     }
+
+    var reconnectionDelay: Int {
+        get {
+            return (store.object(forKey: "ch.ubique.starsdk.sampleapp.reconnectionDelay") as? Int) ?? 60 * 5
+        }
+        set(newValue) {
+            store.set(newValue, forKey: "ch.ubique.starsdk.sampleapp.reconnectionDelay")
+        }
+    }
 }

@@ -10,9 +10,7 @@ public protocol STARTracingDelegate: AnyObject {
     func errorOccured(_ error: STARTracingErrors)
 
     #if CALIBRATION
-
         func didAddLog(_ entry: LogEntry)
-
     #endif
 }
 
@@ -121,4 +119,19 @@ public enum STARTracing {
         try instance.reset()
         instance = nil
     }
+
+    #if CALIBRATION
+    public static var isInitialized: Bool {
+        return instance != nil
+    }
+
+    public static var reconnectionDelay: Int {
+        get {
+            return BluetoothConstants.peripheralReconnectDelay
+        }
+        set {
+            BluetoothConstants.peripheralReconnectDelay = newValue
+        }
+    }
+    #endif
 }
