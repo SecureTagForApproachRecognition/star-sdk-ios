@@ -1,4 +1,4 @@
-name: CI-SDK
+name: ci
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ master, develop ]
 
 jobs:
-  SDK:
+  sdk:
     runs-on: macOS-latest
 
     steps:
@@ -25,7 +25,7 @@ jobs:
     - name: Compile and run tests
       run: fastlane scan
 
-  SampleApp:
+  sampleapp:
     runs-on: macOS-latest
 
     steps:
@@ -35,7 +35,7 @@ jobs:
     - name: Switch to Xcode 11.4
       run: sudo xcode-select --switch /Applications/Xcode_11.4.app
 
-    # Compile sample app
+    # Compile sample app for iOS Simulator (no signing)
     - name: Compile and run tests
-      run: fastlane gym --project SampleApp/STARSampleApp.xcodeproj --scheme "Debug" --skip_package_ipa true
+      run: fastlane gym --project SampleApp/STARSampleApp.xcodeproj --scheme "Debug" --skip_package_ipa true --destination "generic/platform=iOS Simulator"
 
