@@ -1,0 +1,30 @@
+name: distribute
+
+on:
+  push:
+    branches: [ master, develop ]
+
+jobs:
+  sdk:
+    runs-on: macOS-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Switch to Xcode 11.4
+      run: sudo xcode-select --switch /Applications/Xcode_11.4.app
+      
+    - name: Run fastlane build
+      env:
+        MATCH_REPO: ${{ secrets.MATCH_REPO }}
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASS }}
+        SIGNING_ID: ${{ secrets.SIGNING_ID }}
+        FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
+        TEAM_ID: ${{ secrets.TEAM_ID }}
+        APPCENTER_APP_NAME: ${{ secrets.APPCENTER_APP_NAME }}
+        APPCENTER_OWNER_NAME:  ${{ secrets.APPCENTER_OWNER_NAME }}
+        APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
+      run: |
+        fastlane distribute
+
