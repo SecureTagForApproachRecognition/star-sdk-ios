@@ -28,4 +28,5 @@ jobs:
         APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
       run: |
         fastlane distribute
+      working-directory: SampleApp
 
