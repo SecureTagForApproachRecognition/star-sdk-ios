@@ -3,6 +3,8 @@ name: distribute
 on:
   push:
     branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
 
 jobs:
   sdk:
@@ -17,9 +19,8 @@ jobs:
       
     - name: Run fastlane build
       env:
-        MATCH_REPO: ${{ secrets.MATCH_REPO }}
+        MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
         MATCH_PASSWORD: ${{ secrets.MATCH_PASS }}
-        SIGNING_ID: ${{ secrets.SIGNING_ID }}
         FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
         APPCENTER_APP_NAME: ${{ secrets.APPCENTER_APP_NAME }}
