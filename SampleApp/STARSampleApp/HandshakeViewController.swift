@@ -3,7 +3,6 @@
 import STARSDK_CALIBRATION
 import UIKit
 import SnapKit
-import STARSDK
 
 class HandshakeViewController: UIViewController {
 
