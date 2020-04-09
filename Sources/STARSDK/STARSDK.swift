@@ -91,6 +91,8 @@ class STARSDK {
         discoverer.logger = self
         database.logger = self
 
+        print(database)
+
         updateServiceIds()
         try applicationSynchronizer.sync { [weak self] result in
             guard let self = self else { return }
