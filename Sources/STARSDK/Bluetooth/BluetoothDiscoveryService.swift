@@ -142,7 +142,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
                 let identifier = String(data: manuData[0..<4], encoding: .utf8) ?? "Unable to decode"
                 logger?.log(type: .receiver, " → ✅ Received (identifier: \(identifier)) (\(manuData.count) bytes) from \(peripheral.identifier) at \(Date()): \(manuData.hexEncodedString)")
             #else
-                logger?.log(type: .receiver, " → ✅ Received (\(manuData.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
+                logger?.log(type: .receiver, " → ✅ Received (\(manuData.count) bytes) from \(peripheral.identifier) at \(Date()): \(manuData.hexEncodedString)")
             #endif
         } else {
             // Only connect if we didn't got manufacturer data
