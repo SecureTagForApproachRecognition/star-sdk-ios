@@ -60,8 +60,9 @@ class HandshakeViewController: UIViewController {
 
     @objc func didClearData(notification: Notification) {
         cachedHandshakes = []
-        self.tableView.reloadData()
         didLoadHandshakes = false
+        guard tableView != nil else { return }
+        self.tableView.reloadData()
     }
 
     override func viewWillAppear(_ animated: Bool) {
