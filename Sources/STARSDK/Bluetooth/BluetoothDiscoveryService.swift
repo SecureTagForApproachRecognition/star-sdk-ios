@@ -132,10 +132,16 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         RSSICache[peripheral.identifier] = Double(truncating: RSSI)
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-        manuData.count == 36 { // TODO: add validation of manufacturer data, not only based on bytecount
+        manuData.count == 26 { // TODO: add validation of manufacturer data, not only based on bytecount
             let id = peripheral.identifier
             try? delegate?.didDiscover(data: manuData, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
             logger?.log(type: .receiver, " got Manufacturer Data \(manuData.hexEncodedString)")
+            #if CALIBRATION
+                let identifier = String(data: manuData[0..<4], encoding: .utf8) ?? "Unable to decode"
+                logger?.log(type: .receiver, " → ✅ Received (identifier: \(identifier)) (\(manuData.count) bytes) from \(peripheral.identifier) at \(Date()): \(manuData.hexEncodedString)")
+            #else
+                logger?.log(type: .receiver, " → ✅ Received (\(manuData.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
+            #endif
         } else {
             // Only connect if we didn't got manufacturer data
             // we only get the manufacturer if iOS is activly scanning
@@ -259,13 +265,17 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             return
         }
 
-        guard data.count == 36 else {
+        guard data.count == 26 else {
             logger?.log(type: .receiver, " → ❌ Received wrong number of bytes (\(data.count) bytes) from \(peripheral.identifier) at \(Date())")
             manager?.cancelPeripheralConnection(peripheral)
             return
         }
-
-        logger?.log(type: .receiver, " → ✅ Received (\(data.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
+        #if CALIBRATION
+            let identifier = String(data: data[0..<4], encoding: .utf8) ?? "Unable to decode"
+            logger?.log(type: .receiver, " → ✅ Received (identifier: \(identifier)) (\(data.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
+        #else
+            logger?.log(type: .receiver, " → ✅ Received (\(data.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
+        #endif
         manager?.cancelPeripheralConnection(peripheral)
 
         let id = peripheral.identifier

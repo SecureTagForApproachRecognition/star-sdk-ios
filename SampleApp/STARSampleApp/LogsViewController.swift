@@ -35,7 +35,10 @@ class LogsViewController: UIViewController {
 
     init() {
         super.init(nibName: nil, bundle: nil)
-        title = "LOGSv2"
+        title = "Logs"
+        if #available(iOS 13.0, *) {
+            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "list.bullet"), tag: 0)
+        }
         self.loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
@@ -71,6 +74,10 @@ class LogsViewController: UIViewController {
                 }.joined(separator: "\n")
                 DispatchQueue.main.async {
                     let acv = UIActivityViewController(activityItems: [report], applicationActivities: nil)
+                    if let popoverController = acv.popoverPresentationController {
+                        popoverController.barButtonItem = self.navigationItem.rightBarButtonItem
+                        popoverController.sourceView = self.view
+                    }
                     self.present(acv, animated: true)
                 }
             }
@@ -86,17 +93,13 @@ class LogsViewController: UIViewController {
         DispatchQueue.global(qos: .background).async {
             if let resp = try? STARTracing.getLogs(request: request) {
                 self.nextRequest = resp.nextRequest
-                let indexPaths = (request.offset..<(request.offset+resp.logs.count)).map { IndexPath(row: $0, section: 0) }
                 DispatchQueue.main.async {
                     self.refreshControl.endRefreshing()
                     if request.offset == 0 {
                         self.logs = resp.logs
-                        self.tableView.reloadData()
                     } else {
-                        self.tableView.beginUpdates()
                         self.logs.append(contentsOf: resp.logs)
-                        self.tableView.insertRows(at: indexPaths, with: .automatic)
-                        self.tableView.endUpdates()
+                        self.tableView.reloadData()
                     }
                 }
             }
@@ -135,9 +138,7 @@ extension LogsViewController: STARTracingDelegate {
     func didAddLog(_ entry: LogEntry) {
         self.logs.insert(entry, at: 0)
         if view.superview != nil {
-            self.tableView.beginUpdates()
-            self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-            self.tableView.endUpdates()
+            self.tableView.reloadData()
         }
         self.nextRequest?.offset += 1
     }
