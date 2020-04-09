@@ -104,11 +104,17 @@ class HandshakesStorage {
             let rawValue: Int
             static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
         }
+        enum SortingOption {
+            case ascendingTimestamp
+            case descendingTimestamp
+        }
         let filterOption: FilterOption
+        let sortingOption: SortingOption
         let offset: Int
         let limit: Int
-        init(filterOption: FilterOption = [], offset: Int = 0, limit: Int = 50) {
+        init(filterOption: FilterOption = [], sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int = 50) {
             self.filterOption = filterOption
+            self.sortingOption = sortingOption
             self.offset = offset
             self.limit = limit
         }
@@ -133,7 +139,18 @@ class HandshakesStorage {
         assert(request.limit > 0, "Limits should be at least one")
         assert(request.offset >= 0, "Offset must be positive")
 
-        var query = table.limit(request.limit, offset: request.offset).order(timestampColumn.desc)
+        // Limit
+        var query = table.limit(request.limit, offset: request.offset)
+
+        // Sorting
+        switch request.sortingOption {
+        case .ascendingTimestamp:
+            query = query.order(timestampColumn.asc)
+        case .descendingTimestamp:
+            query = query.order(timestampColumn.desc)
+        }
+
+        // Filtering
         if request.filterOption.contains(.hasKnownCaseAssociated) {
             query = query.filter(associatedKnownCaseColumn != nil)
         }
