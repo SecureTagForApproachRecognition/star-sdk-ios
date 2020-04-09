@@ -136,6 +136,21 @@ class ControlViewController: UIViewController {
             button.addTarget(self, action: #selector(updateIdentifier), for: .touchUpInside)
             stackView.addArrangedSubview(button)
         }
+        stackView.addSpacerView(12)
+
+        do {
+            let button = UIButton()
+            if #available(iOS 13.0, *) {
+                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.systemGray, for: .highlighted)
+            } else {
+                button.setTitleColor(.blue, for: .normal)
+                button.setTitleColor(.black, for: .highlighted)
+            }
+            button.setTitle("Share Database", for: .normal)
+            button.addTarget(self, action: #selector(shareDatabase), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
 
         
         stackView.addArrangedSubview(UIView())
@@ -166,6 +181,14 @@ class ControlViewController: UIViewController {
                 }
             }
         }
+    }
+
+    @objc func shareDatabase(){
+        let acv = UIActivityViewController(activityItems: [Self.getDatabasePath()], applicationActivities: nil)
+        if let popoverController = acv.popoverPresentationController {
+            popoverController.sourceView = self.view
+        }
+        self.present(acv, animated: true)
     }
 
     @objc func reset(){
@@ -208,6 +231,12 @@ class ControlViewController: UIViewController {
         case .healthy:
             self.healthLabel.text = "InfectionStatus: HEALTHY"
         }
+    }
+
+    private static func getDatabasePath() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        return documentsDirectory.appendingPathComponent("STAR_tracing_db").appendingPathExtension("sqlite")
     }
 }
 

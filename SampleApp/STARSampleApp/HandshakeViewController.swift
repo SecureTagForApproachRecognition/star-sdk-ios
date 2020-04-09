@@ -23,14 +23,17 @@ class HandshakeViewController: UIViewController {
         }
     }
 
+    private var didLoadHandshakes = false
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "HandShakes"
         dateFormatter.dateStyle = .short
-        dateFormatter.timeStyle = .short
+        dateFormatter.timeStyle = .long
         if #available(iOS 13.0, *) {
             tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "person.3.fill"), tag: 0)
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -271,5 +274,11 @@ extension Data {
             return nil
         }
         return identifier
+    }
+}
+
+extension Data {
+    var hexEncodedString: String {
+        return map { String(format: "%02hhx ", $0) }.joined()
     }
 }
