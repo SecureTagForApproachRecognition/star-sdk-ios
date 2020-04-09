@@ -1,0 +1,2 @@
+app_identifier "ch.ubique.peppptcalibration.ubdiag"
+team_id ENV["TEAM_ID"]
