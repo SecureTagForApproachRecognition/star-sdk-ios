@@ -21,11 +21,13 @@ class HandshakeViewController: UIViewController {
         }
     }
 
+    private var didLoadHandshakes = false
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "HandShakes"
         dateFormatter.dateStyle = .short
-        dateFormatter.timeStyle = .short
+        dateFormatter.timeStyle = .long
         if #available(iOS 13.0, *) {
             tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "person.3.fill"), tag: 0)
         }
@@ -57,7 +59,8 @@ class HandshakeViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if cachedHandshakes.isEmpty {
+        if !didLoadHandshakes {
+            didLoadHandshakes = true
             reloadHandshakes()
         }
     }
@@ -132,7 +135,8 @@ extension HandshakeViewController: UITableViewDataSource {
         }
 
         let handshake = cachedHandshakes[indexPath.row]
-        cell.textLabel?.text = handshake.star.base64EncodedString()
+        let identifier = String(data: handshake.star[0..<4], encoding: .utf8) ?? "Unable to decode"
+        cell.textLabel?.text = "(\(identifier)): \(handshake.star.hexEncodedString)"
         let distance: String = handshake.distance == nil ? "--" : String(format: "%.2fm", handshake.distance!)
         cell.detailTextLabel?.text = "\(dateFormatter.string(from: handshake.timestamp)), \(distance) m, \(handshake.knownCaseId != nil ? "Exposed" : "Not Exposed")"
 
@@ -160,7 +164,14 @@ extension HandshakeViewController: STARTracingDelegate {
 
     func didAddHandshake(_ handshake: HandshakeModel) {
         cachedHandshakes.insert(handshake, at: 0)
+        guard tableView != nil else { return }
         tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .top)
     }
     
+}
+
+extension Data {
+    var hexEncodedString: String {
+        return map { String(format: "%02hhx ", $0) }.joined()
+    }
 }

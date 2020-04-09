@@ -43,5 +43,9 @@ extension RootViewController: STARTracingDelegate {
         .forEach{ $0.didAddLog(entry) }
     }
 
-
+    func didAddHandshake(_ handshake: HandshakeModel) {
+        self.tabs
+        .compactMap{$0 as? STARTracingDelegate}
+        .forEach{ $0.didAddHandshake(handshake) }
+    }
 }
