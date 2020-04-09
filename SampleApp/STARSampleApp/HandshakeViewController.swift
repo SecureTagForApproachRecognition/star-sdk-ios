@@ -28,8 +28,7 @@ class HandshakeViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "HandShakes"
-        dateFormatter.dateStyle = .short
-        dateFormatter.timeStyle = .long
+        dateFormatter.dateFormat = "dd.MM HH:mm:ss "
         if #available(iOS 13.0, *) {
             tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "person.3.fill"), tag: 0)
         }
@@ -213,6 +212,7 @@ extension HandshakeViewController: UITableViewDataSource {
         } else {
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "TVCID")
             cell.textLabel?.numberOfLines = 0
+            cell.detailTextLabel?.numberOfLines = 0
             cell.selectionStyle = .none
         }
 
@@ -226,7 +226,9 @@ extension HandshakeViewController: UITableViewDataSource {
             let star = handshake.star
             cell.textLabel?.text = (star.STARHeadIndentifier ?? "Unknown") + " - " + star.hexEncodedString
             let distance: String = handshake.distance == nil ? "--" : String(format: "%.2fm", handshake.distance!)
-            cell.detailTextLabel?.text = "\(dateFormatter.string(from: handshake.timestamp)), \(distance) m, \(handshake.knownCaseId != nil ? "Exposed" : "Not Exposed")"
+            let tx: String = handshake.TXPowerlevel == nil ? " -- " : String(format: "%.2f", handshake.TXPowerlevel!)
+            let rssi: String = handshake.RSSI == nil ? " -- " : String(format: "%.2f", handshake.RSSI!)
+            cell.detailTextLabel?.text = "\(dateFormatter.string(from: handshake.timestamp)), distance: est. \(distance), TX: \(tx), RSSI: \(rssi), \(handshake.knownCaseId != nil ? "Exposed" : "Not Exposed")"
         }
 
         return cell
