@@ -16,6 +16,7 @@
 		F83BE143242DDC460043FA1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F83BE142242DDC460043FA1E /* Assets.xcassets */; };
 		F83BE146242DDC460043FA1E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F83BE144242DDC460043FA1E /* LaunchScreen.storyboard */; };
 		F83BE150242DDFF60043FA1E /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = F83BE14F242DDFF60043FA1E /* SnapKit */; };
+		F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85D4F3F243EFC6A00529168 /* Defaults.swift */; };
 		F8F528F3243E2090000ABACC /* LogsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F528F2243E2090000ABACC /* LogsViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 		F83BE145242DDC460043FA1E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F83BE147242DDC460043FA1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F83BE17C242DE1BF0043FA1E /* covid-tracing-ios-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "covid-tracing-ios-sdk"; path = ..; sourceTree = "<group>"; };
+		F85D4F3F243EFC6A00529168 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 		F8F528F2243E2090000ABACC /* LogsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -67,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				F83BE139242DDC450043FA1E /* AppDelegate.swift */,
+				F85D4F3F243EFC6A00529168 /* Defaults.swift */,
 				F812AC55243DF459005F26AE /* RootViewController.swift */,
 				F8F528F2243E2090000ABACC /* LogsViewController.swift */,
 				F812AC58243E02A1005F26AE /* ControlViewController.swift */,
@@ -165,6 +168,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F83BE13A242DDC450043FA1E /* AppDelegate.swift in Sources */,
+				F85D4F40243EFC6A00529168 /* Defaults.swift in Sources */,
 				F812AC59243E02A1005F26AE /* ControlViewController.swift in Sources */,
 				F812AC5B243E02AF005F26AE /* ParametersViewController.swift in Sources */,
 				F812AC56243DF459005F26AE /* RootViewController.swift in Sources */,

@@ -35,7 +35,7 @@ class LogsViewController: UIViewController {
 
     init() {
         super.init(nibName: nil, bundle: nil)
-        title = "LOGSv2"
+        title = "Logs"
         self.loadLogs()
         NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }

@@ -7,7 +7,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        try! STARTracing.initialize(with: "ch.ubique.nextstep", enviroment: .dev, mode: .calibration(identifierPrefix: "STAR"))
+        try! STARTracing.initialize(with: "ch.ubique.starsdk.sample", enviroment: .dev, mode: .calibration(identifierPrefix: Default.shared.identifierPrefix ?? "AAAA"))
 
         if application.applicationState != .background {
             initWindow()
