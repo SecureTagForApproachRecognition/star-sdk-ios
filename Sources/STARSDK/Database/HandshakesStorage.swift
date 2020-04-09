@@ -103,9 +103,9 @@ class HandshakesStorage {
             case none
             case tokenStartWith(Data)
         }
-        let filterOption: FilterOption = .none
-        let offset: Int = 0
-        let limit: Int = 1000
+        let filterOption: FilterOption
+        let offset: Int
+        let limit: Int
         init(filterOption: FilterOption = .none, offset: Int = 0, limit: Int = 1000) {
             self.filterOption = filterOption
             self.offset = offset
@@ -165,6 +165,6 @@ class HandshakesStorage {
             nextRequest = HandshakeRequest(filterOption: request.filterOption, offset: nextOffset, limit: request.limit)
         }
 
-        HandshakeResponse(handshakes: handshakes, previousRequest: previousRequest, nextRequest: nextRequest)
+        return HandshakeResponse(handshakes: handshakes, previousRequest: previousRequest, nextRequest: nextRequest)
     }
 }

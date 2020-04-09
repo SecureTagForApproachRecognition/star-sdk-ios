@@ -6,7 +6,7 @@ public enum Enviroment {
     case prod
     /// A development environment
     case dev
-    
+
     /// The endpoint for the discovery
     var discoveryEndpoint: URL {
         switch self {
