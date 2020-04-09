@@ -151,3 +151,16 @@ extension HandshakeViewController: UITableViewDelegate {
         }
     }
 }
+
+extension HandshakeViewController: STARTracingDelegate {
+
+    func STARTracingStateChanged(_ state: TracingState) {}
+
+    func errorOccured(_ error: STARTracingErrors) {}
+
+    func didAddHandshake(_ handshake: HandshakeModel) {
+        cachedHandshakes.insert(handshake, at: 0)
+        tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .top)
+    }
+    
+}

@@ -11,8 +11,16 @@ public protocol STARTracingDelegate: AnyObject {
 
     #if CALIBRATION
         func didAddLog(_ entry: LogEntry)
+        func didAddHandshake(_ handshake: HandshakeModel)
     #endif
 }
+
+#if CALIBRATION
+public extension STARTracingDelegate {
+    func didAddLog(_ entry: LogEntry) {}
+    func didAddHandshake(_ handshake: HandshakeModel) {}
+}
+#endif
 
 private var instance: STARSDK!
 

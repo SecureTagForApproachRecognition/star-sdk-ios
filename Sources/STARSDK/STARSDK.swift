@@ -286,10 +286,13 @@ extension STARSDK: STARMatcherDelegate {
         state.infectionStatus = .exposed
     }
 
-    func handShakeAdded() {
+    func handShakeAdded(_ handshake: HandshakeModel) {
         if let newHandshaked = try? database.handshakesStorage.count() {
             state.numberOfHandshakes = newHandshaked
         }
+        #if CALIBRATION
+        delegate?.didAddHandshake(handshake)
+        #endif
     }
 }
 

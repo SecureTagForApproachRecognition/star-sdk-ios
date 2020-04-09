@@ -6,7 +6,7 @@ protocol STARMatcherDelegate: class {
     func didFindMatch()
 
     /// A new handshake occured
-    func handShakeAdded()
+    func handShakeAdded(_ handshake: HandshakeModel)
 }
 
 /// matcher for STAR tokens
@@ -72,7 +72,7 @@ extension STARMatcher: BluetoothDiscoveryDelegate {
                                        knownCaseId: matchingKnownCaseId)
         try database.handshakesStorage.add(handshake: handshake)
 
-        delegate.handShakeAdded()
+        delegate.handShakeAdded(handshake)
         if matchingKnownCaseId != nil {
             delegate.didFindMatch()
         }
