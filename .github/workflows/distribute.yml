@@ -16,11 +16,6 @@ jobs:
 
     - name: Switch to Xcode 11.4
       run: sudo xcode-select --switch /Applications/Xcode_11.4.app
-
-    - name: Trust Github
-      run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
       
     - name: Run fastlane build
       env:
