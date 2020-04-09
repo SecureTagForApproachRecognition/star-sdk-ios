@@ -1,30 +1,22 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI-SDK
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branches: [ master, develop ]
   pull_request:
     branches: [ master, develop ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  SDK:
     runs-on: macOS-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
     - name: Switch to Xcode 11.4
       run: sudo xcode-select --switch /Applications/Xcode_11.4.app
-      
+
     # Generate xcode project
     - name: Generate xcodeproj
       run: swift package generate-xcodeproj --xcconfig-overrides Sources/Config.xcconfig
@@ -32,3 +24,18 @@ jobs:
     # Compile project and run tests
     - name: Compile and run tests
       run: fastlane scan
+
+  SampleApp:
+    runs-on: macOS-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Switch to Xcode 11.4
+      run: sudo xcode-select --switch /Applications/Xcode_11.4.app
+
+    # Compile sample app
+    - name: Compile and run tests
+      run: fastlane gym --project SampleApp/STARSampleApp.xcodeproj --scheme "Debug" --skip_package_ipa true
+
