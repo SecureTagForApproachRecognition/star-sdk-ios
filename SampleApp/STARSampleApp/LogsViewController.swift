@@ -57,31 +57,11 @@ class LogsViewController: UIViewController {
         tableView.refreshControl = refreshControl
         tableView.dataSource = self
         refreshControl.addTarget(self, action: #selector(reloadLogs), for: .allEvents)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(share))
     }
 
     @objc func didClearData(notification: Notification) {
         logs = []
         self.tableView.reloadData()
-    }
-
-    @objc func share(){
-        DispatchQueue.global(qos: .background).async {
-            let request = LogRequest(sorting: .desc, offset: 0, limit: 10000)
-            if let resp = try? STARTracing.getLogs(request: request) {
-                let report = resp.logs.map { (entry) -> String in
-                    return "\(entry.timestamp.stringVal) \(entry.type.description): \(entry.message)"
-                }.joined(separator: "\n")
-                DispatchQueue.main.async {
-                    let acv = UIActivityViewController(activityItems: [report], applicationActivities: nil)
-                    if let popoverController = acv.popoverPresentationController {
-                        popoverController.barButtonItem = self.navigationItem.rightBarButtonItem
-                        popoverController.sourceView = self.view
-                    }
-                    self.present(acv, animated: true)
-                }
-            }
-        }
     }
 
     @objc
@@ -126,6 +106,14 @@ extension LogsViewController: UITableViewDataSource {
         let log = logs[indexPath.row]
         cell.textLabel?.text = "\(log.timestamp.stringVal) \(log.type.description)"
         cell.detailTextLabel?.text = log.message
+        switch log.type {
+        case .sender:
+            cell.backgroundColor = UIColor(red: 1, green: 0, blue: 0, alpha: 0.1)
+        case .receiver:
+            cell.backgroundColor = UIColor(red: 0, green: 1, blue: 0, alpha: 0.1)
+        default:
+            cell.backgroundColor = .clear
+        }
         return cell
     }
 }
