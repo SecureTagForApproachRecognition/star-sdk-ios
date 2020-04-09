@@ -20,7 +20,7 @@ jobs:
     - name: Run fastlane build
       env:
         MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-        MATCH_PASSWORD: ${{ secrets.MATCH_PASS }}
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
         FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
