@@ -103,11 +103,15 @@ class HandshakesStorage {
     }
 
     func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
-        assert(request.limit > 0, "Limits should be at least one")
-        assert(request.offset >= 0, "Offset must be positive")
+
+        var query = table
 
         // Limit
-        var query = table.limit(request.limit, offset: request.offset)
+        if let limit = request.limit {
+            assert(limit > 0, "Limits should be at least one")
+            assert(request.offset >= 0, "Offset must be positive")
+            query = query.limit(limit, offset: request.offset)
+        }
 
         // Sorting
         switch request.sortingOption {
@@ -123,7 +127,6 @@ class HandshakesStorage {
         }
 
         var handshakes = Array<HandshakeModel>()
-        handshakes.reserveCapacity(request.limit)
         for row in try database.prepare(query) {
             let model = HandshakeModel(timestamp: row[timestampColumn],
                                        star: row[starColumn],
@@ -134,20 +137,20 @@ class HandshakesStorage {
         }
 
         let previousRequest: HandshakeRequest?
-        if request.offset > 0 {
-            let diff = request.offset - request.limit
+        if request.offset > 0, let limit = request.limit {
+            let diff = request.offset - limit
             let previousOffset = max(0, diff)
-            let previousLimit = request.limit + min(0, diff)
+            let previousLimit = limit + min(0, diff)
             previousRequest = HandshakeRequest(filterOption: request.filterOption, offset: previousOffset, limit: previousLimit)
         } else {
             previousRequest = nil
         }
 
         let nextRequest: HandshakeRequest?
-        if handshakes.count < request.limit {
+        if request.limit == nil || handshakes.count < request.limit! {
             nextRequest = nil
         } else {
-            let nextOffset = request.offset + request.limit
+            let nextOffset = request.offset + request.limit!
             nextRequest = HandshakeRequest(filterOption: request.filterOption, offset: nextOffset, limit: request.limit)
         }
 
@@ -171,8 +174,8 @@ public struct HandshakeRequest {
     public let filterOption: FilterOption
     public let sortingOption: SortingOption
     public let offset: Int
-    public let limit: Int
-    public init(filterOption: FilterOption = [], sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int = 30) {
+    public let limit: Int?
+    public init(filterOption: FilterOption = [], sortingOption: SortingOption = .descendingTimestamp, offset: Int = 0, limit: Int? = nil) {
         self.filterOption = filterOption
         self.sortingOption = sortingOption
         self.offset = offset
@@ -182,11 +185,11 @@ public struct HandshakeRequest {
 
 public struct HandshakeResponse {
     public let offset: Int
-    public let limit: Int
+    public let limit: Int?
     public let handshakes: [HandshakeModel]
     public let previousRequest: HandshakeRequest?
     public let nextRequest: HandshakeRequest?
-    fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
+    fileprivate init(handshakes: [HandshakeModel], offset: Int, limit: Int?, previousRequest: HandshakeRequest?, nextRequest: HandshakeRequest?) {
         self.handshakes = handshakes
         self.previousRequest = previousRequest
         self.nextRequest = nextRequest

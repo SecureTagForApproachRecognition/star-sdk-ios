@@ -12,6 +12,15 @@ class HandshakeViewController: UIViewController {
     private var nextRequest: HandshakeRequest?
     private let dateFormatter = DateFormatter()
 
+    private enum Mode {
+        case raw, grouped
+    }
+    private var mode: Mode = .raw {
+        didSet {
+            reloadHandshakes()
+        }
+    }
+
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "HandShakes"
@@ -37,21 +46,46 @@ class HandshakeViewController: UIViewController {
         refreshControl.addTarget(self, action: #selector(refresh(sender:)), for: UIControl.Event.valueChanged)
         tableView.addSubview(refreshControl)
 
-        let toolbar = UIToolbar()
-        
-        let segmentedControl = UISegmentedControl(items: <#T##[Any]?#>)
+        let segmentedControl = UISegmentedControl(items: ["Raw", "Grouped"])
+        segmentedControl.addTarget(self, action: #selector(groupingChanged(sender:)), for: .valueChanged)
+        segmentedControl.selectedSegmentIndex = 0
+        navigationItem.titleView = segmentedControl
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if cachedHandshakes.isEmpty {
-            loadHandshakes(request: HandshakeRequest(), clear: true)
+            reloadHandshakes()
+        }
+    }
+
+    @objc func groupingChanged(sender: UISegmentedControl) {
+        if sender.selectedSegmentIndex == 0 {
+            mode = .raw
+        } else {
+            mode = .grouped
         }
     }
 
     @objc func refresh(sender: UIRefreshControl) {
-        loadHandshakes(request: HandshakeRequest(), clear: true)
+        reloadHandshakes()
         sender.endRefreshing()
+    }
+
+    private func reloadHandshakes() {
+        switch mode {
+        case .raw:
+            loadHandshakes(request: HandshakeRequest(offset: 0, limit: 30), clear: true)
+        case .grouped:
+            loadHandshakes(request: HandshakeRequest(), clear: true)
+        }
+    }
+
+    private func loadNextHandshakes() {
+        guard let nextRequest = nextRequest else {
+            return
+        }
+        loadHandshakes(request: nextRequest, clear: false)
     }
 
     private func loadHandshakes(request: HandshakeRequest, clear: Bool) {
@@ -106,15 +140,11 @@ extension HandshakeViewController: UITableViewDataSource {
 extension HandshakeViewController: UITableViewDelegate {
 
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        guard let nextRequest = nextRequest else {
-            return
-        }
-
         let targetOffset = CGFloat(targetContentOffset.pointee.y)
         let maximumOffset = scrollView.adjustedContentInset.bottom + scrollView.contentSize.height - scrollView.frame.size.height
 
         if maximumOffset - targetOffset <= 40.0 {
-            loadHandshakes(request: nextRequest, clear: false)
+            loadNextHandshakes()
         }
     }
 }
