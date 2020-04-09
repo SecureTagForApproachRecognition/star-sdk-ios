@@ -8,6 +8,12 @@ public protocol STARTracingDelegate: AnyObject {
     /// An error has occurred
     /// - Parameter error: The error
     func errorOccured(_ error: STARTracingErrors)
+
+    #if CALIBRATION
+
+        func didAddLog(_ entry: LogEntry)
+
+    #endif
 }
 
 private var instance: STARSDK!
@@ -23,13 +29,6 @@ public enum STARTracing {
         }
         STARMode.current = mode
         instance = try STARSDK(appId: appId, enviroment: enviroment)
-
-        switch mode {
-        case let .calibration(identifierPrefix):
-            logger?.log("Setting identifier Prefix to \(identifierPrefix)")
-        default:
-            break
-        }
     }
 
     /// The delegate
@@ -42,16 +41,6 @@ public enum STARTracing {
         }
         get {
             instance.delegate
-        }
-    }
-
-    /// The logger
-    public static var logger: LoggingDelegate? {
-        set {
-            instance?.logger = newValue
-        }
-        get {
-            instance.logger
         }
     }
 
@@ -82,6 +71,15 @@ public enum STARTracing {
                 callback?(result)
             }
         }
+    }
+
+    /// get Logs
+    /// - Parameter LogRequest: request
+    public static func getLogs(request: LogRequest) throws -> LogResponse {
+        guard let instance = instance else {
+            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        }
+        return try instance.getLogs(request: request)
     }
 
     /// get the current status of the SDK

@@ -1,5 +1,6 @@
 //
 
+import STARSDK_CALIBRATION
 import UIKit
 import SnapKit
 import STARSDK

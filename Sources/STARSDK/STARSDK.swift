@@ -1,6 +1,7 @@
 //
 
 import Foundation
+import os
 import UIKit
 
 /// Main class for handling SDK logic
@@ -48,19 +49,7 @@ class STARSDK {
                 fatalError("identifierPrefix is only usable in calibration mode")
             }
         }
-        set { }
-    }
-
-    /// The logger
-    public weak var logger: LoggingDelegate? {
-        didSet {
-            guard STARMode.current != .production else {
-                fatalError("logger is only usable in calibration mode")
-            }
-            broadcaster.logger = logger
-            discoverer.logger = logger
-            database.logger = logger
-        }
+        set {}
     }
 
     /// keeps track of  SDK state
@@ -97,6 +86,10 @@ class STARSDK {
         discoverer.permissionDelegate = self
         discoverer.delegate = matcher
         matcher.delegate = self
+
+        broadcaster.logger = self
+        discoverer.logger = self
+        database.logger = self
 
         updateServiceIds()
         try applicationSynchronizer.sync { [weak self] result in
@@ -159,6 +152,12 @@ class STARSDK {
                 }
             }
         }
+    }
+
+    /// get Logs
+    /// - Parameter LogRequest: request
+    func getLogs(request: LogRequest) throws -> LogResponse {
+        return try database.loggingStorage.getLogs(request)
     }
 
     /// get the current status of the SDK
@@ -265,6 +264,8 @@ class STARSDK {
     /// reset the SDK
     func reset() throws {
         stopTracing()
+        Default.shared.lastSync = nil
+        Default.shared.infectionStatus = .healthy
         try database.emptyStorage()
         try database.destroyDatabase()
     }
@@ -301,5 +302,16 @@ extension STARSDK: BluetoothPermissionDelegate {
 
     func unauthorized() {
         state.trackingState = .inactive(error: .PermissonError)
+    }
+}
+
+extension STARSDK: LoggingDelegate {
+    func log(type: LogType, _ string: String) {
+        #if CALIBRATION
+            os_log("%@: %@", type.description, string)
+            if let entry = try? database.loggingStorage.log(type: type, message: string) {
+                delegate?.didAddLog(entry)
+            }
+        #endif
     }
 }

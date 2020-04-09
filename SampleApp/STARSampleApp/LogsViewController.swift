@@ -1,202 +1,145 @@
-import SnapKit
-import STARSDK
+//
+//  LogsViewController.swift
+//  STARSampleApp
+//
+//  Created by Stefan Mitterrutzner on 08.04.20.
+//  Copyright © 2020 Ubique. All rights reserved.
+//
+
 import UIKit
-import os
+import STARSDK_CALIBRATION
 
-class LogsViewController: UIViewController {
-    let startButton = UIButton()
-    let stopButton = UIButton()
-    let clearButton = UIButton()
-    let updateDBButton = UIButton()
-    let getStateButton = UIButton()
-    let markAsInfected = UIButton()
-    let logsView = UITextView()
-    let handshakeCountLabel = UILabel()
-
-    @UserDefault("ch.ubique.STARTracing.testapp", defaultValue: "")
-    var logs: String {
-        didSet {
-            updateLogsView()
-        }
-    }
-
-    init() {
-        super.init(nibName: nil, bundle: nil)
-        title = "Logs"
+class LogCell: UITableViewCell {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+        self.textLabel?.numberOfLines = 0
+        self.textLabel?.font = .boldSystemFont(ofSize: 12.0)
+        self.detailTextLabel?.numberOfLines = 0
+        self.selectionStyle = .none
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+}
+
+class LogsViewController: UIViewController {
+
+    let tableView = UITableView()
+
+    let refreshControl = UIRefreshControl()
+
+    var logs: [LogEntry] = []
+
+    var nextRequest: LogRequest?
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
+        title = "LOGSv2"
+        self.loadLogs()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func loadView() {
+        self.view = tableView
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .lightGray
-
-        setupLayout()
-
-        startButton.setTitleColor(.green, for: .normal)
-        stopButton.setTitleColor(.red, for: .normal)
-        updateDBButton.setTitleColor(.blue, for: .normal)
-        startButton.setTitle("Start", for: .normal)
-        stopButton.setTitle("Stop", for: .normal)
-        clearButton.setTitle("Clear", for: .normal)
-        updateDBButton.setTitle("Update DB", for: .normal)
-        getStateButton.setTitle("GetState", for: .normal)
-        markAsInfected.setTitle("Infected", for: .normal)
-        logsView.text = "Logs:"
-        logsView.isEditable = false
-
-        startButton.addTarget(self, action: #selector(startTracing), for: .touchUpInside)
-        stopButton.addTarget(self, action: #selector(stopTracing), for: .touchUpInside)
-        clearButton.addTarget(self, action: #selector(clearLogs), for: .touchUpInside)
-        updateDBButton.addTarget(self, action: #selector(updateDB), for: .touchUpInside)
-        getStateButton.addTarget(self, action: #selector(getState), for: .touchUpInside)
-        markAsInfected.addTarget(self, action: #selector(setInfected), for: .touchUpInside)
-
-        STARTracing.logger = self
-        STARTracing.delegate = self
+        tableView.register(LogCell.self, forCellReuseIdentifier: "logCell")
+        tableView.refreshControl = refreshControl
+        tableView.dataSource = self
+        refreshControl.addTarget(self, action: #selector(reloadLogs), for: .allEvents)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(share))
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        updateLogsView()
+    @objc func didClearData(notification: Notification) {
+        logs = []
+        self.tableView.reloadData()
     }
 
-    fileprivate func setupLayout() {
-        view.addSubview(startButton)
-        view.addSubview(stopButton)
-        view.addSubview(logsView)
-        view.addSubview(clearButton)
-        view.addSubview(updateDBButton)
-        view.addSubview(getStateButton)
-        view.addSubview(handshakeCountLabel)
-        view.addSubview(markAsInfected)
-
-        handshakeCountLabel.numberOfLines = 0
-
-        handshakeCountLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.centerX.equalToSuperview()
-        }
-
-        clearButton.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.right.equalToSuperview().inset(10)
-        }
-
-        stopButton.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.leading.equalToSuperview().inset(10)
-        }
-
-        markAsInfected.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(10)
-            make.top.equalTo(startButton.snp.bottom).offset(10)
-        }
-
-        startButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(10)
-            make.top.equalTo(stopButton.snp.bottom).offset(10)
-        }
-
-        updateDBButton.snp.makeConstraints { make in
-            make.right.equalToSuperview().inset(10)
-            make.top.equalTo(clearButton.snp.bottom).offset(10)
-        }
-
-        getStateButton.snp.makeConstraints { make in
-            make.top.equalTo(handshakeCountLabel.snp.bottom).inset(-10)
-            make.centerX.equalToSuperview()
-        }
-
-        logsView.snp.makeConstraints { make in
-            make.leading.bottom.trailing.equalToSuperview()
-            make.top.equalTo(markAsInfected.snp.bottom).inset(-10)
-        }
-    }
-
-    fileprivate func updateLogsView() {
-        logsView.text = logs
-        if logs.count > 0 {
-            let location = logsView.text.count - 1
-            let bottom = NSRange(location: location, length: 1)
-            logsView.scrollRangeToVisible(bottom)
-        }
-    }
-
-    override func motionEnded(_ motion: UIEvent.EventSubtype, with _: UIEvent?) {
-        if motion == .motionShake {
-            clearLogs()
-        }
-    }
-
-    @objc func clearLogs() {
-        logs = ""
-    }
-
-    @objc func getState() {
-        STARTracing.status { result in
-            switch result {
-            case let .success(state):
-                self.handshakeCountLabel.text = "Handshakes: \(state.numberOfHandshakes) \n Exposed: \(state.infectionStatus.string) \n \(state.lastSync?.timeIntervalSinceNow ?? 0.0)"
-            default:
-                break
+    @objc func share(){
+        DispatchQueue.global(qos: .background).async {
+            let request = LogRequest(sorting: .desc, offset: 0, limit: 10000)
+            if let resp = try? STARTracing.getLogs(request: request) {
+                let report = resp.logs.map { (entry) -> String in
+                    return "\(entry.timestamp.stringVal) \(entry.type.description): \(entry.message)"
+                }.joined(separator: "\n")
+                DispatchQueue.main.async {
+                    let acv = UIActivityViewController(activityItems: [report], applicationActivities: nil)
+                    self.present(acv, animated: true)
+                }
             }
         }
     }
 
-    @objc func startTracing() {
-        try? STARTracing.startTracing()
+    @objc
+    func reloadLogs() {
+        self.loadLogs()
     }
 
-    @objc func stopTracing() {
-        STARTracing.stopTracing()
-    }
-
-    @objc func setInfected() {
-        STARTracing.iWasExposed(customJSON: nil) { [weak self] _ in
-            self?.log("did mark as exposed")
-        }
-    }
-
-    @objc func updateDB() {
-        STARTracing.sync { result in
-            switch result {
-            case .success:
-                self.logs = self.logs + "\n" + Date().stringVal + "Successful known cases sync"
-            case let .failure(error):
-                self.logs = self.logs + "\n" + Date().stringVal + "Error: \(error.localizedDescription)"
+    func loadLogs(request: LogRequest = LogRequest(sorting: .desc, offset: 0, limit: 200)){
+        DispatchQueue.global(qos: .background).async {
+            if let resp = try? STARTracing.getLogs(request: request) {
+                self.nextRequest = resp.nextRequest
+                let indexPaths = (request.offset..<(request.offset+resp.logs.count)).map { IndexPath(row: $0, section: 0) }
+                DispatchQueue.main.async {
+                    self.refreshControl.endRefreshing()
+                    if request.offset == 0 {
+                        self.logs = resp.logs
+                        self.tableView.reloadData()
+                    } else {
+                        self.tableView.beginUpdates()
+                        self.logs.append(contentsOf: resp.logs)
+                        self.tableView.insertRows(at: indexPaths, with: .automatic)
+                        self.tableView.endUpdates()
+                    }
+                }
             }
+
         }
     }
 }
 
-extension LogsViewController: LoggingDelegate {
-    func log(_ string: String) {
-        os_log("%@", string)
-        logs = logs + "\n" + Date().stringVal + string
+
+
+extension LogsViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return logs.count
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if indexPath.row == (logs.count - 1),
+           let nextRequest = self.nextRequest {
+            loadLogs(request: nextRequest)
+        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: "logCell", for: indexPath) as! LogCell
+        let log = logs[indexPath.row]
+        cell.textLabel?.text = "\(log.timestamp.stringVal) \(log.type.description)"
+        cell.detailTextLabel?.text = log.message
+        return cell
     }
 }
 
 extension LogsViewController: STARTracingDelegate {
-    func STARTracingStateChanged(_ state: TracingState) {
-        handshakeCountLabel.text = "Handshakes: \(state.numberOfHandshakes) \n Infected: \(state.infectionStatus.string) \n \(state.lastSync?.timeIntervalSinceNow ?? 0.0)"
-    }
+    func STARTracingStateChanged(_ state: TracingState) {}
 
-    func errorOccured(_: STARTracingErrors) {}
-}
+    func errorOccured(_ error: STARTracingErrors) {}
 
-extension InfectionStatus {
-    var string: String {
-        switch self {
-        case .exposed:
-            return "Exposed"
-        case .infected:
-            return "Infected"
-        case .healthy:
-            return "Healthy"
+    func didAddLog(_ entry: LogEntry) {
+        self.logs.insert(entry, at: 0)
+        if view.superview != nil {
+            self.tableView.beginUpdates()
+            self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+            self.tableView.endUpdates()
         }
+        self.nextRequest?.offset += 1
     }
 }
 
