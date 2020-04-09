@@ -31,6 +31,7 @@ class HandshakeViewController: UIViewController {
         if #available(iOS 13.0, *) {
             tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "person.3.fill"), tag: 0)
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -55,6 +56,12 @@ class HandshakeViewController: UIViewController {
         segmentedControl.addTarget(self, action: #selector(groupingChanged(sender:)), for: .valueChanged)
         segmentedControl.selectedSegmentIndex = 0
         navigationItem.titleView = segmentedControl
+    }
+
+    @objc func didClearData(notification: Notification) {
+        cachedHandshakes = []
+        self.tableView.reloadData()
+        didLoadHandshakes = false
     }
 
     override func viewWillAppear(_ animated: Bool) {
