@@ -248,9 +248,7 @@ extension HandshakeViewController: UITableViewDelegate {
 extension HandshakeViewController: STARTracingDelegate {
 
     func STARTracingStateChanged(_ state: TracingState) {}
-
-    func errorOccured(_ error: STARTracingErrors) {}
-
+    
     func didAddHandshake(_ handshake: HandshakeModel) {
         switch mode {
         case .raw:

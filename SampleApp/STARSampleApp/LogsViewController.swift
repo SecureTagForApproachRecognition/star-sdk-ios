@@ -121,8 +121,6 @@ extension LogsViewController: UITableViewDataSource {
 extension LogsViewController: STARTracingDelegate {
     func STARTracingStateChanged(_ state: TracingState) {}
 
-    func errorOccured(_ error: STARTracingErrors) {}
-
     func didAddLog(_ entry: LogEntry) {
         self.logs.insert(entry, at: 0)
         if view.superview != nil {

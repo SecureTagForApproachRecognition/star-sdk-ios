@@ -80,10 +80,6 @@ class ParametersViewController: UIViewController {
 
 extension ParametersViewController: STARTracingDelegate {
     func STARTracingStateChanged(_ state: TracingState) {}
-
-    func errorOccured(_ error: STARTracingErrors) { }
-
-    func didAddLog(_ entry: LogEntry) { }
 }
 
 extension ParametersViewController: UITextFieldDelegate {

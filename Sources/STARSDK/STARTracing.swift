@@ -5,9 +5,6 @@ public protocol STARTracingDelegate: AnyObject {
     /// The state has changed
     /// - Parameter state: The new state
     func STARTracingStateChanged(_ state: TracingState)
-    /// An error has occurred
-    /// - Parameter error: The error
-    func errorOccured(_ error: STARTracingErrors)
 
     #if CALIBRATION
         func didAddLog(_ entry: LogEntry)

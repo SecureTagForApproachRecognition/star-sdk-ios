@@ -308,10 +308,6 @@ extension ControlViewController: STARTracingDelegate {
     func STARTracingStateChanged(_ state: TracingState) {
         updateUI(state)
     }
-
-    func errorOccured(_ error: STARTracingErrors) { }
-
-    func didAddLog(_ entry: LogEntry) { }
 }
 
 extension ControlViewController: UITextFieldDelegate {

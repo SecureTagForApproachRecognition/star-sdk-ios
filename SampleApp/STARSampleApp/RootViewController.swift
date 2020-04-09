@@ -31,12 +31,6 @@ extension RootViewController: STARTracingDelegate {
             .forEach{ $0.STARTracingStateChanged(state) }
     }
 
-    func errorOccured(_ error: STARTracingErrors) {
-        self.tabs
-        .compactMap{$0 as? STARTracingDelegate}
-        .forEach{ $0.errorOccured(error) }
-    }
-
     func didAddLog(_ entry: LogEntry) {
         self.tabs
         .compactMap{$0 as? STARTracingDelegate}
