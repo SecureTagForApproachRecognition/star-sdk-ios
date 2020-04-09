@@ -70,7 +70,6 @@ class HandshakeViewController: UIViewController {
         tableView?.reloadData()
     }
 
-    private var didLoadHandshakes = false
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if !didLoadHandshakes {
@@ -274,11 +273,5 @@ extension Data {
             return nil
         }
         return identifier
-    }
-}
-
-extension Data {
-    var hexEncodedString: String {
-        return map { String(format: "%02hhx ", $0) }.joined()
     }
 }
