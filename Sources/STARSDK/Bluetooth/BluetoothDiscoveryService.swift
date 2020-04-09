@@ -135,7 +135,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         updateDistanceForPeripheral(peripheral, rssi: RSSI)
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-            manuData.count == 36 { // TODO: add validation of manufacturer data, not only based on bytecount
+            manuData.count == 26 { // TODO: add validation of manufacturer data, not only based on bytecount
             try? delegate?.didDiscover(data: manuData, distance: distancesCache[peripheral.identifier])
             logger?.log(type: .receiver, " got Manufacturer Data \(manuData.hexEncodedString)")
         } else {
@@ -274,7 +274,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             return
         }
 
-        guard data.count == 36 else {
+        guard data.count == 26 else {
             logger?.log(type: .receiver, " → ❌ Received wrong number of bytes (\(data.count) bytes) from \(peripheral.identifier) at \(Date())")
             manager?.cancelPeripheralConnection(peripheral)
             return
