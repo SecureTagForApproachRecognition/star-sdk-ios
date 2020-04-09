@@ -7,7 +7,7 @@ on:
     branches: [ master, develop ]
 
 jobs:
-  sdk:
+  appcenter:
     runs-on: macOS-latest
 
     steps:
@@ -21,12 +21,13 @@ jobs:
       env:
         MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
         MATCH_PASSWORD: ${{ secrets.MATCH_PASS }}
+        MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
         FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
         APPCENTER_APP_NAME: ${{ secrets.APPCENTER_APP_NAME }}
         APPCENTER_OWNER_NAME:  ${{ secrets.APPCENTER_OWNER_NAME }}
         APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
       run: |
-        fastlane distribute
+        fastlane distribute --verbose
       working-directory: SampleApp
 
