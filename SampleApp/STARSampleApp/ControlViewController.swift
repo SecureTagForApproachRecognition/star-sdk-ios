@@ -17,6 +17,9 @@ class ControlViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         title = "Controls"
+        if #available(iOS 13.0, *) {
+            tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "doc.text"), tag: 0)
+        }
         segmentedControl.selectedSegmentIndex = 1
         segmentedControl.addTarget(self, action: #selector(segmentedControlChanges), for: .valueChanged)
     }
