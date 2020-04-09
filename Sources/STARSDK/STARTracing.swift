@@ -129,6 +129,18 @@ public enum STARTracing {
     }
 
     #if CALIBRATION
+    public static func startAdvertising() throws {
+        guard let instance = instance else {
+            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        }
+        try instance.startAdvertising()
+    }
+    public static func startReceiving() throws {
+        guard let instance = instance else {
+            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        }
+        try instance.startReceiving()
+    }
     public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
         try instance.getHandshakes(request: request)
     }

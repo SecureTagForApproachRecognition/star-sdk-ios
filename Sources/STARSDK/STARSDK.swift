@@ -136,6 +136,18 @@ class STARSDK {
         broadcaster.stopService()
         state.trackingState = .stopped
     }
+    #if CALIBRATION
+
+    func startAdvertising() throws {
+        state.trackingState = .activeAdvertising
+        broadcaster.startService()
+    }
+    func startReceiving() throws {
+        state.trackingState = .activeReceiving
+        discoverer.startScanning()
+    }
+
+    #endif
 
     /// Perform a new sync
     /// - Parameter callback: callback

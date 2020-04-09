@@ -8,7 +8,10 @@ class ControlViewController: UIViewController {
 
     let segmentedControl = UISegmentedControl(items: ["On", "Off"])
 
-    let healthLabel = UILabel()
+    let startAdvertisingButton = UIButton()
+    let startReceivingButton = UIButton()
+
+    let statusLabel = UILabel()
 
     let stackView = UIStackView()
 
@@ -38,7 +41,14 @@ class ControlViewController: UIViewController {
         }
         stackView.axis = .vertical
 
-        healthLabel.font = .boldSystemFont(ofSize: 18)
+        statusLabel.font = .systemFont(ofSize: 18)
+        statusLabel.textAlignment = .center
+        statusLabel.numberOfLines = 0
+        if #available(iOS 13.0, *) {
+            statusLabel.backgroundColor = .systemGroupedBackground
+        } else {
+            statusLabel.backgroundColor = .lightGray
+        }
         STARTracing.status { (result) in
             switch result {
             case let .success(state):
@@ -48,7 +58,7 @@ class ControlViewController: UIViewController {
             }
         }
 
-        stackView.addArrangedSubview(healthLabel)
+        stackView.addArrangedSubview(statusLabel)
         stackView.addSpacerView(18)
 
         do {
@@ -56,6 +66,36 @@ class ControlViewController: UIViewController {
             label.text = "Start / Stop Bluetooth Service"
             stackView.addArrangedSubview(label)
             stackView.addArrangedSubview(segmentedControl)
+
+            if #available(iOS 13.0, *) {
+                startAdvertisingButton.setTitleColor(.systemBlue, for: .normal)
+                startAdvertisingButton.setTitleColor(.systemGray, for: .highlighted)
+                startAdvertisingButton.setTitleColor(.systemGray2, for: .disabled)
+            } else {
+                startAdvertisingButton.setTitleColor(.blue, for: .normal)
+                startAdvertisingButton.setTitleColor(.black, for: .highlighted)
+                startAdvertisingButton.setTitleColor(.lightGray, for: .disabled)
+            }
+            startAdvertisingButton.setTitle("Start Advertising", for: .normal)
+            startAdvertisingButton.addTarget(self, action: #selector(startAdvertising), for: .touchUpInside)
+
+            stackView.addArrangedSubview(startAdvertisingButton)
+
+
+            if #available(iOS 13.0, *) {
+                startReceivingButton.setTitleColor(.systemBlue, for: .normal)
+                startReceivingButton.setTitleColor(.systemGray, for: .highlighted)
+                startReceivingButton.setTitleColor(.systemGray2, for: .disabled)
+            } else {
+                startReceivingButton.setTitleColor(.blue, for: .normal)
+                startReceivingButton.setTitleColor(.black, for: .highlighted)
+                startReceivingButton.setTitleColor(.lightGray, for: .disabled)
+            }
+            startReceivingButton.setTitle("Start Receiving", for: .normal)
+            startReceivingButton.addTarget(self, action: #selector(startReceiving), for: .touchUpInside)
+            
+            stackView.addArrangedSubview(startReceivingButton)
+
         }
 
         stackView.addSpacerView(12)
@@ -210,27 +250,51 @@ class ControlViewController: UIViewController {
     @objc func segmentedControlChanges(){
         if segmentedControl.selectedSegmentIndex == 0 {
             try? STARTracing.startTracing()
+            Default.shared.tracingMode = .active
         }else {
             STARTracing.stopTracing()
+            Default.shared.tracingMode = .none
         }
     }
 
+    @objc func startAdvertising(){
+        try? STARTracing.startAdvertising()
+        Default.shared.tracingMode = .activeAdvertising
+    }
+
+    @objc func startReceiving(){
+        try? STARTracing.startReceiving()
+        Default.shared.tracingMode = .activeReceiving
+    }
+
     func updateUI(_ state: TracingState){
+        var elements: [String]  = []
+        elements.append(state.trackingState.stringValue)
         switch state.trackingState {
-        case .active:
+        case .active, .activeReceiving, .activeAdvertising:
             segmentedControl.selectedSegmentIndex = 0
+            startReceivingButton.isEnabled = false
+            startAdvertisingButton.isEnabled = false
         default:
             segmentedControl.selectedSegmentIndex = 1
+            startReceivingButton.isEnabled = true
+            startAdvertisingButton.isEnabled = true
+        }
+        if let lastSync = state.lastSync {
+            elements.append(lastSync.stringVal)
         }
 
         switch state.infectionStatus {
         case .exposed:
-            self.healthLabel.text = "InfectionStatus: EXPOSED"
+            elements.append("InfectionStatus: EXPOSED")
         case .infected:
-            self.healthLabel.text = "InfectionStatus: INFECTED"
+            elements.append("InfectionStatus: INFECTED")
         case .healthy:
-            self.healthLabel.text = "InfectionStatus: HEALTHY"
+            elements.append("InfectionStatus: HEALTHY")
         }
+        elements.append("Handshakes: \(state.numberOfHandshakes)")
+
+        statusLabel.text = elements.joined(separator: "\n")
     }
 
     private static func getDatabasePath() -> URL {
@@ -263,5 +327,22 @@ extension ControlViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
+    }
+}
+
+fileprivate extension TrackingState {
+    var stringValue: String {
+        switch self {
+        case .active:
+            return "active"
+        case .activeAdvertising:
+            return "activeAdvertising"
+        case .activeReceiving:
+            return "activeReceiving"
+        case let .inactive(error):
+            return "inactive \(error.localizedDescription)"
+        case .stopped:
+            return "stopped"
+        }
     }
 }

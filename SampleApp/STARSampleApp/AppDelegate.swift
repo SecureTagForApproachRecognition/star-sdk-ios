@@ -14,7 +14,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             initWindow()
         }
 
-        try? STARTracing.startTracing()
+        switch Default.shared.tracingMode {
+        case .none:
+            break
+        case .active:
+            try? STARTracing.startTracing()
+        case .activeAdvertising:
+            try? STARTracing.startAdvertising()
+        case .activeReceiving:
+            try? STARTracing.startReceiving()
+        }
 
         return true
     }
