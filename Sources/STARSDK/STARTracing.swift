@@ -76,15 +76,6 @@ public enum STARTracing {
         }
     }
 
-    /// get Logs
-    /// - Parameter LogRequest: request
-    public static func getLogs(request: LogRequest) throws -> LogResponse {
-        guard let instance = instance else {
-            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
-        }
-        return try instance.getLogs(request: request)
-    }
-
     /// get the current status of the SDK
     /// - Parameter callback: callback
     public static func status(callback: (Result<TracingState, STARTracingErrors>) -> Void) {
@@ -132,14 +123,23 @@ public enum STARTracing {
         }
         try instance.startAdvertising()
     }
+
     public static func startReceiving() throws {
         guard let instance = instance else {
             fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
         }
         try instance.startReceiving()
     }
+
     public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
         try instance.getHandshakes(request: request)
+    }
+
+    public static func getLogs(request: LogRequest) throws -> LogResponse {
+        guard let instance = instance else {
+            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        }
+        return try instance.getLogs(request: request)
     }
 
     public static func numberOfHandshakes() throws -> Int {

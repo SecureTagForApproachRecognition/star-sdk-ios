@@ -20,8 +20,10 @@ class BluetoothBroadcastService: NSObject {
     /// An object that can handle bluetooth permission requests and errors
     public weak var permissionDelegate: BluetoothPermissionDelegate?
 
+    #if CALIBRATION
     /// A logger to output messages
     public weak var logger: LoggingDelegate?
+    #endif
 
     /// The service ID for the current application
     private var serviceId: CBUUID? {
@@ -52,7 +54,9 @@ class BluetoothBroadcastService: NSObject {
     /// Start the broadcast service
     public func startService() {
         guard peripheralManager == nil else {
+            #if CALIBRATION
             logger?.log(type: .sender, "startService service already started")
+            #endif
             return
         }
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: [
@@ -63,7 +67,9 @@ class BluetoothBroadcastService: NSObject {
 
     /// Stops the broadcast service
     public func stopService() {
+        #if CALIBRATION
         logger?.log(type: .sender, "stopping Services")
+        #endif
 
         peripheralManager?.removeAllServices()
         peripheralManager?.stopAdvertising()
@@ -86,7 +92,9 @@ class BluetoothBroadcastService: NSObject {
         service?.characteristics = [characteristic]
         peripheralManager?.add(service!)
 
+        #if CALIBRATION
         logger?.log(type: .sender, "added Service with \(serviceId.uuidString)")
+        #endif
     }
 }
 
@@ -94,7 +102,9 @@ class BluetoothBroadcastService: NSObject {
 
 extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
+        #if CALIBRATION
         logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidUpdateState")
+        #endif
 
         switch peripheral.state {
         case .poweredOn where service == nil:
@@ -109,7 +119,9 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error _: Error?) {
+        #if CALIBRATION
         logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerdidAddservice")
+        #endif
 
         peripheralManager?.startAdvertising([
             CBAdvertisementDataServiceUUIDsKey: [service.uuid],
@@ -117,22 +129,28 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         ])
     }
 
+    #if CALIBRATION
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
         if let error = error {
             logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
         }
     }
+    #endif
 
     func peripheralManager(_: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         do {
             let data = try starCrypto!.newTOTP()
             request.value = data
             peripheralManager?.respond(to: request, withResult: .success)
+            #if CALIBRATION
             logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
+            #endif
         } catch {
             peripheralManager?.respond(to: request, withResult: .unlikelyError)
+            #if CALIBRATION
             logger?.log(type: .sender, "← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
+            #endif
         }
     }
 
@@ -140,7 +158,9 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         if let services: [CBMutableService] = dict[CBPeripheralManagerRestoredStateServicesKey] as? [CBMutableService],
             let service = services.first(where: { $0.uuid == serviceId }) {
             self.service = service
+            #if CALIBRATION
             logger?.log(type: .sender, "PeripheralManager#willRestoreState services :\(services.count)")
+            #endif
         }
     }
 }

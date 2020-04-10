@@ -32,14 +32,15 @@ class STARCrypto: STARCryptoProtocol {
         let timestamp = Data(bytes: &counter, count: MemoryLayout<UInt16>.size)
         let hmacValue = hmac(msg: timestamp, key: key)
 
-        switch STARMode.current {
-        case let .calibration(identifierPrefix):
+        #if CALIBRATION
+        if case let STARMode.calibration(identifierPrefix) = STARMode.current {
             let truncatedValue = hmacValue.subdata(in: 0 ..< 20)
             return identifierPrefix.data(using: .utf8)! + timestamp + truncatedValue
-        default:
-            let truncatedValue = hmacValue.subdata(in: 0 ..< 24)
-            return timestamp + truncatedValue
         }
+        #endif
+
+        let truncatedValue = hmacValue.subdata(in: 0 ..< 24)
+        return timestamp + truncatedValue
     }
 
     func validate(key: Data, star: Data) -> Bool {

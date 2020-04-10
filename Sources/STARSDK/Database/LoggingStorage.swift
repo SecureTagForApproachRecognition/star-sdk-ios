@@ -3,6 +3,7 @@
 import Foundation
 import SQLite
 
+#if CALIBRATION
 public struct LogEntry: Identifiable {
     public let id: Int
     public let timestamp: Date
@@ -120,3 +121,4 @@ class LoggingStorage {
         return LogResponse(logs: logs, nextRequest: nextRequest)
     }
 }
+#endif

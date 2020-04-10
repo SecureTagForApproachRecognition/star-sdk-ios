@@ -39,6 +39,7 @@ class STARSDK {
     /// delegate
     public weak var delegate: STARTracingDelegate?
 
+    #if CALIBRATION
     /// getter for identifier prefix for calibration mode
     private(set) var identifierPrefix: String {
         get {
@@ -51,6 +52,7 @@ class STARSDK {
         }
         set {}
     }
+    #endif
 
     /// keeps track of  SDK state
     private var state: TracingState {
@@ -87,9 +89,11 @@ class STARSDK {
         discoverer.delegate = matcher
         matcher.delegate = self
 
+        #if CALIBRATION
         broadcaster.logger = self
         discoverer.logger = self
         database.logger = self
+        #endif
 
         print(database)
 
@@ -136,8 +140,8 @@ class STARSDK {
         broadcaster.stopService()
         state.trackingState = .stopped
     }
-    #if CALIBRATION
 
+    #if CALIBRATION
     func startAdvertising() throws {
         state.trackingState = .activeAdvertising
         broadcaster.startService()
@@ -146,7 +150,6 @@ class STARSDK {
         state.trackingState = .activeReceiving
         discoverer.startScanning()
     }
-
     #endif
 
     /// Perform a new sync
@@ -166,12 +169,6 @@ class STARSDK {
                 }
             }
         }
-    }
-
-    /// get Logs
-    /// - Parameter LogRequest: request
-    func getLogs(request: LogRequest) throws -> LogResponse {
-        return try database.loggingStorage.getLogs(request)
     }
 
     /// get the current status of the SDK
@@ -284,6 +281,8 @@ class STARSDK {
         try database.destroyDatabase()
     }
 
+
+    #if CALIBRATION
     func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
         try database.handshakesStorage.getHandshakes(request)
     }
@@ -291,6 +290,11 @@ class STARSDK {
     func numberOfHandshakes() throws -> Int {
         try database.handshakesStorage.numberOfHandshakes()
     }
+
+    func getLogs(request: LogRequest) throws -> LogResponse {
+        return try database.loggingStorage.getLogs(request)
+    }
+    #endif
 }
 
 // MARK: STARMatcherDelegate implementation
@@ -322,13 +326,13 @@ extension STARSDK: BluetoothPermissionDelegate {
     }
 }
 
+#if CALIBRATION
 extension STARSDK: LoggingDelegate {
     func log(type: LogType, _ string: String) {
-        #if CALIBRATION
-            os_log("%@: %@", type.description, string)
-            if let entry = try? database.loggingStorage.log(type: type, message: string) {
-                delegate?.didAddLog(entry)
-            }
-        #endif
+        os_log("%@: %@", type.description, string)
+        if let entry = try? database.loggingStorage.log(type: type, message: string) {
+            delegate?.didAddLog(entry)
+        }
     }
 }
+#endif

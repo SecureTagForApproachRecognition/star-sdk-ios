@@ -2,7 +2,7 @@
 
 import CoreBluetooth
 import Foundation
-
+#if CALIBRATION
 public enum LogType: Int, CustomStringConvertible {
     case none = 0
     case receiver = 1
@@ -61,3 +61,4 @@ extension LoggingDelegate {
         }
     }
 }
+#endif
