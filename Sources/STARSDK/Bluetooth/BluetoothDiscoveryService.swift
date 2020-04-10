@@ -1,5 +1,6 @@
 import CoreBluetooth
 import Foundation
+import UIKit.UIApplication
 
 /// The discovery service responsible of scanning for nearby bluetooth devices offering the STAR service
 class BluetoothDiscoveryService: NSObject {
@@ -22,7 +23,15 @@ class BluetoothDiscoveryService: NSObject {
     #endif
 
     /// A list of peripherals pending for retriving info
-    private var pendingPeripherals: [CBPeripheral] = []
+    private var pendingPeripherals: [CBPeripheral] = [] {
+        didSet {
+            if pendingPeripherals.isEmpty {
+                endBackgroundTask()
+            } else {
+                beginBackgroundTask()
+            }
+        }
+    }
 
     /// A list of peripherals that are about to be discarded
     private var peripheralsToDiscard: [CBPeripheral]?
@@ -32,6 +41,9 @@ class BluetoothDiscoveryService: NSObject {
 
     /// The computed distance from the discovered peripherals
     private var RSSICache: [UUID: Double] = [:]
+
+    /// Identifier of the background task
+    private var backgroundTask: UIBackgroundTaskIdentifier?
 
     /// All service ID to scan for
     private var serviceIds: [CBUUID] = [] {
@@ -54,6 +66,30 @@ class BluetoothDiscoveryService: NSObject {
     /// - Parameter serviceIDs: The list of service IDs
     public func set(serviceIDs: [String]) {
         serviceIds = serviceIDs.map(CBUUID.init(string:))
+    }
+
+    /// Starts a background task
+    private func beginBackgroundTask() {
+        guard self.backgroundTask == nil else { return }
+        #if CALIBRATION
+        logger?.log(type: .receiver, "Starting Background Task")
+        #endif
+        self.backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "ch.ubique.bluetooth.backgroundtask" ) {
+            self.endBackgroundTask()
+            #if CALIBRATION
+            self.logger?.log(type: .receiver, "Background Task ended")
+            #endif
+        }
+    }
+
+    /// Terminates a Backgroundtask if one is running
+    private func endBackgroundTask(){
+        guard let identifier = self.backgroundTask else { return }
+        #if CALIBRATION
+        logger?.log(type: .receiver, "Terminating background Task")
+        #endif
+        UIApplication.shared.endBackgroundTask(identifier)
+        self.backgroundTask = nil
     }
 
     /// Update all services
@@ -103,6 +139,7 @@ class BluetoothDiscoveryService: NSObject {
         manager?.stopScan()
         manager = nil
         pendingPeripherals.removeAll()
+        endBackgroundTask()
     }
 }
 
