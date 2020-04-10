@@ -189,15 +189,26 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         RSSICache[peripheral.identifier] = Double(truncating: RSSI)
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-        manuData.count == 26 { // TODO: add validation of manufacturer data, not only based on bytecount
+           manuData.count == 28,
+           manuData[0..<2].withUnsafeBytes({ $0.load(as: UInt16.self) }) == BluetoothConstants.androidManufacturerId {
+
+            // drop manufacturer identifier
+            let data = manuData.dropFirst(2)
+
             let id = peripheral.identifier
-            try? delegate?.didDiscover(data: manuData, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
+            try? delegate?.didDiscover(data: data, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
 
             #if CALIBRATION
-                logger?.log(type: .receiver, " got Manufacturer Data \(manuData.hexEncodedString)")
-                let identifier = String(data: manuData[0..<4], encoding: .utf8) ?? "Unable to decode"
-                logger?.log(type: .receiver, " → ✅ Received (identifier: \(identifier)) (\(manuData.count) bytes) from \(peripheral.identifier) at \(Date()): \(manuData.hexEncodedString)")
+                logger?.log(type: .receiver, "got Manufacturer Data \(data.hexEncodedString)")
+            let identifier = String(data: data[..<4], encoding: .utf8) ?? "Unable to decode"
+                logger?.log(type: .receiver, " → ✅ Received (identifier over ScanRSP: \(identifier)) (\(data.count) bytes) from \(peripheral.identifier) at \(Date()): \(data.hexEncodedString)")
             #endif
+
+            //Cancel connection if it was already made
+            pendingPeripherals.removeAll(where: { $0.identifier == peripheral.identifier })
+            try? storage.discard(uuid: peripheral.identifier.uuidString)
+            manager?.cancelPeripheralConnection(peripheral)
+
         } else {
             // Only connect if we didn't got manufacturer data
             // we only get the manufacturer if iOS is activly scanning

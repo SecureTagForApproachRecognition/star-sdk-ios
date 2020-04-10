@@ -15,4 +15,6 @@ enum BluetoothConstants {
     /// This is needed because peripheralId's are roatating
     static var peripheralDisposeInterval: TimeInterval = 60 * 60
     static var peripheralDisposeIntervalSinceDiscovery: TimeInterval = 10 * 60
+
+    static var androidManufacturerId: UInt16 = 0xabba
 }
