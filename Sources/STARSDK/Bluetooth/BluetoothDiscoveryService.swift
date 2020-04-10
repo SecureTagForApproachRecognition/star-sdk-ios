@@ -2,6 +2,11 @@ import CoreBluetooth
 import Foundation
 import UIKit.UIApplication
 
+struct PeripheralMetaData {
+    var lastConnection: Date?
+    var discovery: Date
+}
+
 /// The discovery service responsible of scanning for nearby bluetooth devices offering the STAR service
 class BluetoothDiscoveryService: NSObject {
 
@@ -14,16 +19,13 @@ class BluetoothDiscoveryService: NSObject {
     /// A  delegate capable of responding to permission requests
     public weak var permissionDelegate: BluetoothPermissionDelegate?
 
-    /// The storage for last connecting dates of peripherals
-    private let storage: PeripheralStorage
-
     /// A logger for debugging
     #if CALIBRATION
     public weak var logger: LoggingDelegate?
     #endif
 
     /// A list of peripherals pending for retriving info
-    private var pendingPeripherals: [CBPeripheral] = [] {
+    private var pendingPeripherals: [CBPeripheral : PeripheralMetaData] = [:] {
         didSet {
             if pendingPeripherals.isEmpty {
                 endBackgroundTask()
@@ -52,14 +54,6 @@ class BluetoothDiscoveryService: NSObject {
                 updateServices()
             }
         }
-    }
-
-    /// Initialize the discovery object with a storage.
-    /// - Parameters:
-    ///   - storage: The storage.
-    init(storage: PeripheralStorage) {
-        self.storage = storage
-        super.init()
     }
 
     /// Sets the list of service IDs to scan for
@@ -104,6 +98,25 @@ class BluetoothDiscoveryService: NSObject {
                 self.logger?.log(type: .receiver, " scanning for \(self.serviceIds.map { $0.uuidString }.joined(separator: ", "))")
             }
             #endif
+        }
+    }
+
+    private func disposeOldPeripherals(){
+        #if CALIBRATION
+        logger?.log(type: .receiver, "disposeOldPeripherals")
+        #endif
+        var toDispose: [CBPeripheral] = []
+        for (peripheral, metadata) in self.pendingPeripherals where metadata.lastConnection != nil {
+            if Date().timeIntervalSince(metadata.lastConnection!) > BluetoothConstants.peripheralDisposeInterval {
+                toDispose.append(peripheral)
+                #if CALIBRATION
+                logger?.log(type: .receiver, "disposeOldPeripherals dispose because last connection was \(Date().timeIntervalSince(metadata.lastConnection!))seconds ago")
+                #endif
+            }
+        }
+        for peripheral in toDispose {
+            pendingPeripherals[peripheral] = nil
+            manager?.cancelPeripheralConnection(peripheral)
         }
     }
 
@@ -159,10 +172,10 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
                 CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
             ])
             peripheralsToDiscard?.forEach { peripheral in
-                try? self.storage.discard(uuid: peripheral.identifier.uuidString)
                 self.manager?.cancelPeripheralConnection(peripheral)
             }
             peripheralsToDiscard = nil
+            pendingPeripherals.keys.forEach { manager?.connect($0, options: nil) }
         case .poweredOff:
             permissionDelegate?.deviceTurnedOff()
         case .unauthorized:
@@ -173,6 +186,8 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+        Default.shared.lastDiscovery = Date()
+        disposeOldPeripherals()
         #if CALIBRATION
         logger?.log(type: .receiver, " didDiscover: \(peripheral), rssi: \(RSSI)db")
         #endif
@@ -205,16 +220,14 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             #endif
 
             //Cancel connection if it was already made
-            pendingPeripherals.removeAll(where: { $0.identifier == peripheral.identifier })
-            try? storage.discard(uuid: peripheral.identifier.uuidString)
+            pendingPeripherals[peripheral] = nil
             manager?.cancelPeripheralConnection(peripheral)
 
         } else {
             // Only connect if we didn't got manufacturer data
             // we only get the manufacturer if iOS is activly scanning
             // otherwise we have to connect to the peripheral and read the characteristics
-            try? storage.setDiscovery(uuid: peripheral.identifier)
-            pendingPeripherals.append(peripheral)
+            pendingPeripherals[peripheral] = PeripheralMetaData(lastConnection: nil, discovery: Date())
             central.connect(peripheral, options: nil)
         }
     }
@@ -223,21 +236,20 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #if CALIBRATION
         logger?.log(type: .receiver, " didConnect: \(peripheral)")
         #endif
-        try? storage.setConnection(uuid: peripheral.identifier)
+        pendingPeripherals[peripheral]?.lastConnection = Date()
         peripheral.delegate = self
         peripheral.discoverServices(serviceIds)
         peripheral.readRSSI()
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        if let entity = try? storage.get(uuid: peripheral.identifier),
+        if let entity = pendingPeripherals[peripheral],
             let lastConnection = entity.lastConnection {
             if Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
                 #if CALIBRATION
                 logger?.log(type: .receiver, " didDisconnectPeripheral dispose because last connection was \(Date().timeIntervalSince(lastConnection))seconds ago")
                 #endif
-                pendingPeripherals.removeAll(where: { $0.identifier == peripheral.identifier })
-                try? storage.discard(uuid: peripheral.identifier.uuidString)
+                pendingPeripherals[peripheral] = nil
                 return
             }
         }
@@ -267,21 +279,19 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         logger?.log(type: .receiver, " didFailToConnect error: \(error.debugDescription)")
         #endif
 
-        if let entity = try? storage.get(uuid: peripheral.identifier) {
+        if let entity = pendingPeripherals[peripheral] {
             if let lastConnection = entity.lastConnection,
                 Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
                 #if CALIBRATION
                 logger?.log(type: .receiver, " didFailToConnect dispose because last connection was \(Date().timeIntervalSince(lastConnection))seconds ago")
                 #endif
-                pendingPeripherals.removeAll(where: { $0.identifier == peripheral.identifier })
-                try? storage.discard(uuid: peripheral.identifier.uuidString)
+                pendingPeripherals[peripheral] = nil
                 return
-            } else if Date().timeIntervalSince(entity.discoverTime) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
+            } else if Date().timeIntervalSince(entity.discovery) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
                 #if CALIBRATION
-                logger?.log(type: .receiver, " didFailToConnect dispose because connection never suceeded and was \(Date().timeIntervalSince(entity.discoverTime))seconds ago")
+                logger?.log(type: .receiver, " didFailToConnect dispose because connection never suceeded and was \(Date().timeIntervalSince(entity.discovery))seconds ago")
                 #endif
-                pendingPeripherals.removeAll(where: { $0.identifier == peripheral.identifier })
-                try? storage.discard(uuid: peripheral.identifier.uuidString)
+                pendingPeripherals[peripheral] = nil
                 return
             }
         }
@@ -294,27 +304,20 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         logger?.log(type: .receiver, " CentralManager#willRestoreState")
         #endif
         if let peripherals: [CBPeripheral] = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
-            peripheralsToDiscard = []
-
-            try? storage.loopThrough(block: { (entity) -> Bool in
-                var toDiscard: String?
-                if let lastConnection = entity.lastConnection,
-                    Date().timeIntervalSince(lastConnection) > BluetoothConstants.peripheralDisposeInterval {
-                    toDiscard = entity.uuid
-                } else if Date().timeIntervalSince(entity.discoverTime) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery {
-                    toDiscard = entity.uuid
+            if let lastDiscovery = Default.shared.lastDiscovery,
+            Date().timeIntervalSince(lastDiscovery) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery{
+                peripheralsToDiscard = peripherals
+                #if CALIBRATION
+                logger?.log(type: .receiver, "CentralManager#willRestoreState not restoring Peripherals since they are to old")
+                #endif
+            } else {
+                for peripheral in peripherals {
+                    pendingPeripherals[peripheral] = PeripheralMetaData(lastConnection: nil, discovery: Date())
                 }
-                if let toDiscard = toDiscard,
-                    let peripheralToDiscard = peripherals.first(where: { $0.identifier.uuidString == toDiscard }) {
-                    peripheralsToDiscard?.append(peripheralToDiscard)
-                }
-                return true
-            })
-
-            pendingPeripherals.append(contentsOf: peripherals.filter { !(peripheralsToDiscard?.contains($0) ?? false) })
-            #if CALIBRATION
-            logger?.log(type: .receiver, "CentralManager#willRestoreState restoring peripherals \(pendingPeripherals) discarded \(peripheralsToDiscard.debugDescription) \n")
-            #endif
+                #if CALIBRATION
+                logger?.log(type: .receiver, "CentralManager#willRestoreState restoring peripherals \(pendingPeripherals)")
+                #endif
+            }
         }
     }
 
@@ -391,7 +394,6 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             #if CALIBRATION
             logger?.log(type: .receiver, " No service found 🤬")
             #endif
-            try? storage.discard(uuid: peripheral.identifier.uuidString)
             manager?.cancelPeripheralConnection(peripheral)
         }
     }

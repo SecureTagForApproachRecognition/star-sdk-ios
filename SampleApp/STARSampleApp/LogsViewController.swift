@@ -106,11 +106,15 @@ extension LogsViewController: UITableViewDataSource {
         let log = logs[indexPath.row]
         cell.textLabel?.text = "\(log.timestamp.stringVal) \(log.type.description)"
         cell.detailTextLabel?.text = log.message
+        cell.textLabel?.backgroundColor = .clear
+        cell.detailTextLabel?.backgroundColor = .clear
         switch log.type {
         case .sender:
             cell.backgroundColor = UIColor(red: 1, green: 0, blue: 0, alpha: 0.1)
         case .receiver:
             cell.backgroundColor = UIColor(red: 0, green: 1, blue: 0, alpha: 0.1)
+        case .sdk:
+            cell.backgroundColor = UIColor(red: 0, green: 0, blue: 1, alpha: 0.1)
         default:
             cell.backgroundColor = .clear
         }
