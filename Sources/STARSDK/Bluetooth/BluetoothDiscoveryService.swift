@@ -5,6 +5,8 @@ import UIKit.UIApplication
 struct PeripheralMetaData {
     var lastConnection: Date?
     var discovery: Date
+    var rssi: Double?
+    var txPowerlevel: Double?
 }
 
 /// The discovery service responsible of scanning for nearby bluetooth devices offering the STAR service
@@ -37,12 +39,6 @@ class BluetoothDiscoveryService: NSObject {
 
     /// A list of peripherals that are about to be discarded
     private var peripheralsToDiscard: [CBPeripheral]?
-
-    /// Transmission power levels per discovered peripheral
-    private var powerLevelsCache: [UUID: Double] = [:]
-
-    /// The computed distance from the discovered peripherals
-    private var RSSICache: [UUID: Double] = [:]
 
     /// Identifier of the background task
     private var backgroundTask: UIBackgroundTaskIdentifier?
@@ -195,13 +191,13 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             #if CALIBRATION
             logger?.log(type: .receiver, " found TX-Power in Advertisment data: \(power)")
             #endif
-            powerLevelsCache[peripheral.identifier] = power
+            pendingPeripherals[peripheral]?.txPowerlevel = power
         } else {
             #if CALIBRATION
             logger?.log(type: .receiver, " TX-Power not available")
             #endif
         }
-        RSSICache[peripheral.identifier] = Double(truncating: RSSI)
+        pendingPeripherals[peripheral]?.rssi = Double(truncating: RSSI)
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
            manuData.count == 28,
@@ -210,8 +206,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             // drop manufacturer identifier
             let data = manuData.dropFirst(2)
 
-            let id = peripheral.identifier
-            try? delegate?.didDiscover(data: data, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
+            try? delegate?.didDiscover(data: data, TXPowerlevel: pendingPeripherals[peripheral]?.txPowerlevel, RSSI: pendingPeripherals[peripheral]?.rssi)
 
             #if CALIBRATION
                 logger?.log(type: .receiver, "got Manufacturer Data \(data.hexEncodedString)")
@@ -322,7 +317,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error _: Error?) {
-        RSSICache[peripheral.identifier] = Double(truncating: RSSI)
+        pendingPeripherals[peripheral]?.rssi = Double(truncating: RSSI)
     }
 }
 
@@ -374,8 +369,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
         #endif
         manager?.cancelPeripheralConnection(peripheral)
 
-        let id = peripheral.identifier
-        try? delegate?.didDiscover(data: data, TXPowerlevel: powerLevelsCache[id], RSSI: RSSICache[id])
+        try? delegate?.didDiscover(data: data, TXPowerlevel: pendingPeripherals[peripheral]?.txPowerlevel, RSSI: pendingPeripherals[peripheral]?.rssi)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {

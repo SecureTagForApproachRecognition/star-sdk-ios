@@ -268,6 +268,9 @@ extension Data {
     }
 
     var STARHeadIndentifier: String? {
+        if self.count < 4 {
+            return nil
+        }
         let head = self[0..<4]
         guard let identifier = String(data: head, encoding: .utf8) else {
             return nil
