@@ -34,6 +34,10 @@ class BluetoothDiscoveryService: NSObject {
             } else {
                 beginBackgroundTask()
             }
+            let numConnecting = pendingPeripherals.keys.filter { $0.state == .connecting }.count
+            let numConnected = pendingPeripherals.keys.filter { $0.state == .connected }.count
+            let numDisconnected = pendingPeripherals.keys.filter { $0.state == .disconnected }.count
+            logger?.log(type: .receiver, "updatedPeripherals ( connecting -> \(numConnecting), connected -> \(numConnected), disconnected -> \(numDisconnected) )")
         }
     }
 
@@ -98,15 +102,21 @@ class BluetoothDiscoveryService: NSObject {
     }
 
     private func disposeOldPeripherals(){
-        #if CALIBRATION
-        logger?.log(type: .receiver, "disposeOldPeripherals")
-        #endif
         var toDispose: [CBPeripheral] = []
         for (peripheral, metadata) in self.pendingPeripherals where metadata.lastConnection != nil {
             if Date().timeIntervalSince(metadata.lastConnection!) > BluetoothConstants.peripheralDisposeInterval {
                 toDispose.append(peripheral)
                 #if CALIBRATION
-                logger?.log(type: .receiver, "disposeOldPeripherals dispose because last connection was \(Date().timeIntervalSince(metadata.lastConnection!))seconds ago")
+                var state: String
+                switch peripheral.state {
+                case .connected: state = "connected"
+                case .connecting: state = "connecting"
+                case .disconnected: state = "disconnected"
+                case .disconnecting: state = "disconnecting"
+                @unknown default:
+                    state = "unknown"
+                }
+                logger?.log(type: .receiver, "disposeOldPeripherals dispose because last connection was \(Date().timeIntervalSince(metadata.lastConnection!))seconds ago ( state: \(state) ")
                 #endif
             }
         }
@@ -303,7 +313,10 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             Date().timeIntervalSince(lastDiscovery) > BluetoothConstants.peripheralDisposeIntervalSinceDiscovery{
                 peripheralsToDiscard = peripherals
                 #if CALIBRATION
-                logger?.log(type: .receiver, "CentralManager#willRestoreState not restoring Peripherals since they are to old")
+                let numConnecting = peripherals.filter { $0.state == .connecting }.count
+                let numConnected = peripherals.filter { $0.state == .connected }.count
+                let numDisconnected = peripherals.filter { $0.state == .disconnected }.count
+                logger?.log(type: .receiver, "CentralManager#willRestoreState not restoring Peripherals since they are to old ( connecting -> \(numConnecting), connected -> \(numConnected), disconnected -> \(numDisconnected) )")
                 #endif
             } else {
                 for peripheral in peripherals {
