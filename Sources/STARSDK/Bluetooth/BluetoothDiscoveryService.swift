@@ -45,6 +45,9 @@ class BluetoothDiscoveryService: NSObject {
     /// Identifier of the background task
     private var backgroundTask: UIBackgroundTaskIdentifier?
 
+    /// The STAR crypto algorithm
+    private weak var starCrypto: STARCryptoProtocol?
+
     /// All service ID to scan for
     private var serviceIds: [CBUUID] = [] {
         didSet {
@@ -57,8 +60,10 @@ class BluetoothDiscoveryService: NSObject {
     /// Initialize the discovery object with a storage.
     /// - Parameters:
     ///   - storage: The storage.
-    init(storage: PeripheralStorage) {
+    ///   - Parameter starCrypto: The STAR crypto algorithm
+    init(storage: PeripheralStorage, starCrypto: STARCryptoProtocol) {
         self.storage = storage
+        self.starCrypto = starCrypto
         super.init()
     }
 
@@ -336,6 +341,14 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             return
         }
         peripheral.readValue(for: characteristic)
+        if let data = try? starCrypto?.newTOTP(),
+           let descriptor = characteristic.descriptors?.first {
+               #if CALIBRATION
+               logger?.log(type: .receiver, "writing token to peripheral")
+               #endif
+            peripheral.writeValue(data, for: descriptor)
+        }
+
         #if CALIBRATION
         logger?.log(type: .receiver, " found characteristic \(peripheral.name.debugDescription)")
         #endif

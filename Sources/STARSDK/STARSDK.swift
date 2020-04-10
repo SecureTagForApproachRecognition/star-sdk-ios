@@ -78,13 +78,14 @@ class STARSDK {
         synchronizer = KnownCasesSynchronizer(appId: appId, database: database, matcher: matcher)
         applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage)
         broadcaster = BluetoothBroadcastService(starCrypto: starCrypto)
-        discoverer = BluetoothDiscoveryService(storage: database.peripheralStorage)
+        discoverer = BluetoothDiscoveryService(storage: database.peripheralStorage, starCrypto: starCrypto)
         state = TracingState(numberOfHandshakes: (try? database.handshakesStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
                              infectionStatus: Default.shared.infectionStatus)
 
         broadcaster.permissionDelegate = self
+        broadcaster.delegate = matcher
         discoverer.permissionDelegate = self
         discoverer.delegate = matcher
         matcher.delegate = self

@@ -20,6 +20,9 @@ class BluetoothBroadcastService: NSObject {
     /// An object that can handle bluetooth permission requests and errors
     public weak var permissionDelegate: BluetoothPermissionDelegate?
 
+    /// A delegate for receiving the discovery callbacks
+    public weak var delegate: BluetoothDiscoveryDelegate?
+
     #if CALIBRATION
     /// A logger to output messages
     public weak var logger: LoggingDelegate?
@@ -86,9 +89,9 @@ class BluetoothBroadcastService: NSObject {
         service = CBMutableService(type: serviceId,
                                    primary: true)
         let characteristic = CBMutableCharacteristic(type: BluetoothConstants.characteristicsCBUUID,
-                                                     properties: [.read, .notify],
+                                                     properties: [.read, .notify, .write],
                                                      value: nil,
-                                                     permissions: .readable)
+                                                     permissions: [.readable, .writeable])
         service?.characteristics = [characteristic]
         peripheralManager?.add(service!)
 
@@ -152,6 +155,29 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             logger?.log(type: .sender, "← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
             #endif
         }
+    }
+
+    func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
+        #if CALIBRATION
+        logger?.log(type: .sender, "didReceiveWrite")
+        #endif
+        guard let request = requests.first(where: { $0.characteristic.uuid == BluetoothConstants.characteristicsCBUUID })  else {
+            requests.forEach({ peripheral.respond(to: $0, withResult: .invalidHandle) })
+            return
+        }
+        guard let data = request.value,
+            data.count == 26 else {
+                peripheral.respond(to: request, withResult: .invalidPdu)
+                return
+        }
+        #if CALIBRATION
+        let identifier = String(data: data[0..<4], encoding: .utf8) ?? "Unable to decode"
+        logger?.log(type: .sender, "✅ \(identifier) didReceiveWrite with valid Data lenght \(data.hexEncodedString)")
+        #endif
+
+        try? delegate?.didDiscover(data: data, TXPowerlevel: nil, RSSI: nil)
+
+        peripheral.respond(to: request, withResult: .success)
     }
 
     func peripheralManager(_: CBPeripheralManager, willRestoreState dict: [String: Any]) {
