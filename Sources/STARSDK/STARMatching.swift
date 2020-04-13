@@ -12,7 +12,7 @@ protocol STARMatcherDelegate: class {
 /// matcher for STAR tokens
 class STARMatcher {
     /// The STAR crypto algorithm
-    private let starCrypto: STARCryptoProtocol
+    private let starCrypto: STARCryptoModule
 
     /// Databse
     private weak var database: STARDatabase!
@@ -24,7 +24,7 @@ class STARMatcher {
     /// - Parameters:
     ///   - database: databse
     ///   - starCrypto: star algorithm
-    init(database: STARDatabase, starCrypto: STARCrypto) throws {
+    init(database: STARDatabase, starCrypto: STARCryptoModule) throws {
         self.database = database
         self.starCrypto = starCrypto
     }
@@ -35,10 +35,10 @@ class STARMatcher {
         var matchingHandshakeId: Int?
 
         try database.handshakesStorage.loopThrough(block: { (handshake, handshakeId) -> Bool in
-            if self.starCrypto.validate(key: knownCase.key, star: handshake.star) {
+            /*if self.starCrypto.validate(key: knownCase.key, star: handshake.star) {
                 matchingHandshakeId = handshakeId
                 return false
-            }
+            }*/
             return true
         })
 
@@ -57,10 +57,10 @@ extension STARMatcher: BluetoothDiscoveryDelegate {
 
         if matchingKnownCaseId == nil {
             try database.knownCasesStorage.loopThrough { (knownCase) -> Bool in
-                if self.starCrypto.validate(key: knownCase.key, star: data) {
+                /*if self.starCrypto.validate(key: knownCase.key, star: data) {
                     matchingKnownCaseId = knownCase.id
                     return false
-                }
+                }*/
                 return true
             }
         }

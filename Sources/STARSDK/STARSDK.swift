@@ -22,7 +22,7 @@ class STARSDK {
     private let database: STARDatabase
 
     /// The STAR crypto algorithm
-    private let starCrypto: STARCrypto
+    private let starCrypto: STARCryptoModule
 
     /// Fetch the discovery data and stores it
     private let applicationSynchronizer: ApplicationSynchronizer
@@ -73,7 +73,7 @@ class STARSDK {
         self.enviroment = enviroment
         self.appId = appId
         database = try STARDatabase()
-        starCrypto = try STARCrypto()
+        starCrypto = STARCryptoModule()!
         matcher = try STARMatcher(database: database, starCrypto: starCrypto)
         synchronizer = KnownCasesSynchronizer(appId: appId, database: database, matcher: matcher)
         applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage)
@@ -238,7 +238,7 @@ class STARSDK {
                     }
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd"
-                    let model = ExposeeModel(key: try self.starCrypto.getSecretKey(), onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
+                    let model = ExposeeModel(key: try self.starCrypto.getSecretKeyForPublishing(onsetDate:onset)!, onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
                     service.addExposee(model, completion: block)
 
                 } catch let error as STARTracingErrors {
@@ -261,6 +261,7 @@ class STARSDK {
         Default.shared.infectionStatus = .healthy
         try database.emptyStorage()
         try database.destroyDatabase()
+        starCrypto.reset()
     }
 
 

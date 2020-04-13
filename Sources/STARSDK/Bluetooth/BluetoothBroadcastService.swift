@@ -12,7 +12,7 @@ class BluetoothBroadcastService: NSObject {
     private var service: CBMutableService?
 
     /// The STAR crypto algorithm
-    private weak var starCrypto: STARCryptoProtocol?
+    private weak var starCrypto: STARCryptoModule?
 
     /// Random device name for enhanced privacy
     private var localName: String = UUID().uuidString
@@ -40,7 +40,7 @@ class BluetoothBroadcastService: NSObject {
 
     /// Create a Bluetooth broadcaster with a STAR crypto algorithm
     /// - Parameter starCrypto: The STAR crypto algorithm
-    public init(starCrypto: STARCryptoProtocol) {
+    public init(starCrypto: STARCryptoModule) {
         self.starCrypto = starCrypto
         super.init()
     }
@@ -140,7 +140,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
     func peripheralManager(_: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         do {
-            let data = try starCrypto!.newTOTP()
+            let data = try starCrypto!.getCurrentEphId()
             request.value = data
             peripheralManager?.respond(to: request, withResult: .success)
             #if CALIBRATION
