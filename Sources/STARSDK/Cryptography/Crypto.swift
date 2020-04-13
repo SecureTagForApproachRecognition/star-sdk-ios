@@ -45,11 +45,6 @@ public class Crypto {
 
         let keyLength: Int
 
-        let ivSize: Int
-
-        var cryptLength: Int
-
-
         var cryptor: CCCryptorRef? = nil
 
         init(keyData:Data) throws {
@@ -57,17 +52,19 @@ public class Crypto {
 
             keyLength = keyData.count
 
-            ivSize = kCCBlockSizeAES128;
-
-            cryptLength = size_t(ivSize + 16 + kCCBlockSizeAES128)
             let status = keyData.withUnsafeBytes { keyBytes in
-                CCCryptorCreate(CCOperation(kCCEncrypt),
-                                CCAlgorithm(kCCAlgorithmAES),
-                                CCOptions(kCCModeCTR),
-                                keyBytes,
-                                keyLength,
-                                nil,
-                                &cryptor)
+                CCCryptorCreateWithMode(CCOperation(kCCEncrypt),
+                                        CCMode(kCCModeCTR),
+                                        CCAlgorithm(kCCAlgorithmAES),
+                                        CCPadding(ccNoPadding),
+                                        nil,
+                                        keyBytes,
+                                        keyLength,
+                                        nil,
+                                        0,
+                                        0,
+                                        CCOptions(kCCModeOptionCTR_BE),
+                                        &cryptor)
             }
             if (status != 0) {
                 throw CrypoError.AESError

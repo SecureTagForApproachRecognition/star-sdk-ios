@@ -49,16 +49,20 @@ final class STARTracingCryptoTests: XCTestCase {
     func testGenerationEphsIdsWithAndorid(){
         let store = KeyStore()
         let star: STARCryptoModule = STARCryptoModule(store: store)!
-        let base64SecretKey = "pcu8RDQQhvzL7oCOZjLCBdAodQfNK406m1x9JXugxoY="
-        let base64EncodedEphId = "YJF2WJaDVhnOZqpfBSqfjA=="
+        let base64SecretKey = "MZbZmgsA+9b0A8mkkcAQJcww727M8tlI1zO/2eGZ/DA="
+        let base64EncodedEphId = "IYiXz8YZcqTUGNhmHk422UlogB6bQAFGr6Q="
+        let base64EncodedEph1Id = "iavGGZym0MwjmWhJP8vk4Fmer2sO/YHGgmg="
         let allEphId: [Data] = try! star.createEphIds(secretKey: Data(base64Encoded: base64SecretKey)!)
         var matchingCount = 0
         for ephId in allEphId {
             if ephId.base64EncodedString() == base64EncodedEphId {
                 matchingCount += 1
             }
+            if ephId.base64EncodedString() == base64EncodedEph1Id {
+                matchingCount += 1
+            }
         }
-        XCTAssert(matchingCount == 1)
+        XCTAssert(matchingCount == 2)
     }
 
     static var allTests = [
