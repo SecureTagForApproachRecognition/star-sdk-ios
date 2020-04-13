@@ -397,10 +397,8 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
     }
 }
 
-#if CALIBRATION
 extension Data {
     var hexEncodedString: String {
         return map { String(format: "%02hhx ", $0) }.joined()
     }
 }
-#endif
