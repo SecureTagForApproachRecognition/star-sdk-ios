@@ -178,20 +178,13 @@ class STARSDK {
         callback(.success(state))
     }
 
-    /// tell the SDK that the user was expose
+    /// tell the SDK that the user was exposed
     /// - Parameters:
-    ///   - customJSON: customJson to pass to the backen
+    ///   - onset: Start date of the exposure
+    ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    func iWasExposed(customJSON: String?, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
-        changeExposureState(customJSON: customJSON, action: .add, callback: callback)
-    }
-
-    /// tell the SDK that the user is no longer exposed
-    /// - Parameters:
-    ///   - customJSON: customJson to pass to the backen
-    ///   - callback: callback
-    func iAmNoLongerExposed(customJSON: String?, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
-        changeExposureState(customJSON: customJSON, action: .remove, callback: callback)
+    func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
+        setExposed(onset: onset, authString: authString, callback: callback)
     }
 
     /// used to construct a new tracing service client
@@ -218,15 +211,12 @@ class STARSDK {
         }
     }
 
-    /// Description of the exposure action
-    private enum ExposureAction { case add, remove }
-
-    /// update the backend with the new exposure  state
+    /// update the backend with the new exposure state
     /// - Parameters:
-    ///   - customJSON: customJson to pass to the backen
-    ///   - action: exposure state
+    ///   - onset: Start date of the exposure
+    ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    private func changeExposureState(customJSON _: String?, action: ExposureAction, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
+    private func setExposed(onset: Date, authString: String, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
         getATracingServiceClient(forceRefresh: false) { [weak self] result in
             guard let self = self else {
                 return
@@ -240,24 +230,16 @@ class STARSDK {
                 do {
                     let block: ((Result<Void, STARTracingErrors>) -> Void) = { [weak self] result in
                         if case .success = result {
-                            switch action {
-                            case .add:
-                                self?.state.infectionStatus = .infected
-                            case .remove:
-                                self?.state.infectionStatus = .healthy
-                            }
+                            self?.state.infectionStatus = .infected
                         }
                         DispatchQueue.main.async {
                             callback(result)
                         }
                     }
-                    let model = ExposeeModel(key: try self.starCrypto.getSecretKey())
-                    switch action {
-                    case .add:
-                        service.addExposee(model, completion: block)
-                    case .remove:
-                        service.removeExposee(model, completion: block)
-                    }
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    let model = ExposeeModel(key: try self.starCrypto.getSecretKey(), onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
+                    service.addExposee(model, completion: block)
 
                 } catch let error as STARTracingErrors {
                     DispatchQueue.main.async {
