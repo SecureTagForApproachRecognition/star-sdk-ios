@@ -11,6 +11,7 @@ fileprivate class KeyStore: SecretKeyStorageProtocol {
         self.keys = object
     }
     func removeAllObject() {
+        keys = []
     }
 }
 
@@ -65,10 +66,55 @@ final class STARTracingCryptoTests: XCTestCase {
         XCTAssert(matchingCount == 2)
     }
 
+    func testReset(){
+        let store = KeyStore()
+        var star: STARCryptoModule? = STARCryptoModule(store: store)!
+        let ephId = try! star!.getCurrentEphId()
+
+        star!.reset()
+        star = nil
+        star = STARCryptoModule(store: store)!
+
+        let newEphId = try! star!.getCurrentEphId()
+
+        XCTAssertNotEqual(ephId, newEphId)
+    }
+
+    func testTokenToday(){
+        let key = "lTSYc/ER08HD1/ucwBJOiDLDEYiJruKqTHCiOFavzwA="
+        let token = "yJNfwAP8UaF+BZKbUiVwhUghLz60SOqPE0I="
+        testKeyAndTokenToday(key, token, found: true)
+    }
+
+    func testWrongTokenToday(){
+        let key = "yJNfwAP8UaF+BZKbUiVwhUghLz60SOqPE0I="
+        let token = "lTSYc/ER08HD1/ucwBJOiDLDEYiJruKqTHCiOFavzwA="
+        testKeyAndTokenToday(key, token, found: false)
+    }
+
+    func testKeyAndTokenToday(_ key: String, _ token: String, found: Bool){
+        let store = KeyStore()
+        let star: STARCryptoModule? = STARCryptoModule(store: store)!
+
+        var handshakes: [HandshakeModel] = []
+        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), star: Data(base64Encoded: token)!, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
+
+        let keyData = Data(base64Encoded: key)!
+        let h = try! star?.checkContacts(secretKey: keyData, onsetDate: Epoch(date: Date().addingTimeInterval(-1 * .hour * 24)), bucketDate: Epoch(), getHandshake: { (_) -> ([HandshakeModel]) in
+            handshakes
+        })
+        XCTAssertEqual(h != nil, found)
+
+    }
+
+
     static var allTests = [
         ("sha256", testSha256),
         ("generateEphIds", testGenerateEphIds),
         ("generateEphIdsAndroid", testGenerationEphsIdsWithAndorid),
-        ("testHmac", testHmac)
+        ("testHmac", testHmac),
+        ("testReset", testReset),
+        ("testTokenToday", testTokenToday),
+        ("testWrongTokenToday", testWrongTokenToday)
     ]
 }
