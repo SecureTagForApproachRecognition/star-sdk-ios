@@ -97,6 +97,9 @@ class KnownCasesSynchronizer {
         // TODO: Handle db errors
         for (day, knownCases) in knownCases {
             try? database.update(knownCases: knownCases, day: day)
+            for knownCase in knownCases {
+                try? matcher?.checkNewKnownCase(knownCase, bucketDay: day)
+            }
         }
 
         callback?(Result.success(()))

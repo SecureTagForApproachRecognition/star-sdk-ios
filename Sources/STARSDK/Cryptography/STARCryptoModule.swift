@@ -81,9 +81,9 @@ class STARCryptoModule {
         return try createEphIds(secretKey: currentSk)[counter]
     }
 
-    public func checkContacts(secretKey: SecretKey, onsetDate: Epoch, bucketDate: Epoch, getHandshake: (Date)->([HandshakeModel])) throws -> Bool {
+    public func checkContacts(secretKey: Data, onsetDate: Epoch, bucketDate: Epoch, getHandshake: (Date)->([HandshakeModel])) throws -> HandshakeModel? {
         var dayToTest: Epoch = onsetDate
-        var secretKeyForDay: Data = secretKey.keyData
+        var secretKeyForDay: Data = secretKey
         while dayToTest.isBefore(other: bucketDate) {
             let handshakesOnDay = getHandshake(Date(timeIntervalSince1970: dayToTest.timestamp))
             guard !handshakesOnDay.isEmpty else {
@@ -98,7 +98,7 @@ class STARCryptoModule {
             for handshake in handshakesOnDay {
                 for ephId in ephIds {
                     if handshake.star == ephId {
-                        return true
+                        return handshake
                     }
                 }
             }
@@ -107,7 +107,7 @@ class STARCryptoModule {
             dayToTest = dayToTest.getNext()
             secretKeyForDay = getSKt1(SKt0: secretKeyForDay)
         }
-        return false
+        return nil
     }
 
     public func getSecretKeyForPublishing(onsetDate: Date) throws -> Data? {
