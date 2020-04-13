@@ -85,26 +85,16 @@ public enum STARTracing {
         instance.status(callback: callback)
     }
 
-    /// tell the SDK that the user was expose
+    /// tell the SDK that the user was exposed
     /// - Parameters:
-    ///   - customJSON: customJson to pass to the backen
+    ///   - onset: Start date of the exposure
+    ///   - authString: Authentication string for the exposure change
     ///   - callback: callback
-    public static func iWasExposed(customJSON: String?, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
+    public static func iWasExposed(onset: Date, authString: String, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
         guard let instance = instance else {
             fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
         }
-        instance.iWasExposed(customJSON: customJSON, callback: callback)
-    }
-
-    /// tell the SDK that the user is no longer exposed
-    /// - Parameters:
-    ///   - customJSON: customJson to pass to the backen
-    ///   - callback: callback
-    public static func iAmNoLongerExposed(customJSON: String?, callback: @escaping (Result<Void, STARTracingErrors>) -> Void) {
-        guard let instance = instance else {
-            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
-        }
-        instance.iAmNoLongerExposed(customJSON: customJSON, callback: callback)
+        instance.iWasExposed(onset: onset, authString: authString, callback: callback)
     }
 
     /// reset the SDK

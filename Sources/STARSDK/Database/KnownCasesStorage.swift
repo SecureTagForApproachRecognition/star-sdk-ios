@@ -30,7 +30,7 @@ class KnownCasesStorage {
             t.column(idColumn, primaryKey: .autoincrement)
             t.column(dayColumn)
             t.column(onsetColumn)
-            t.column(keyColumn, primaryKey: true)
+            t.column(keyColumn)
         })
     }
 

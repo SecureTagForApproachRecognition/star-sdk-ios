@@ -210,8 +210,8 @@ class ControlViewController: UIViewController {
         STARTracing.sync { _ in }
     }
 
-    @objc func setExposed(){
-        STARTracing.iWasExposed(customJSON: nil) { (_) in
+    @objc func setExposed() {
+        STARTracing.iWasExposed(onset: Date(), authString: "") { (_) in
             STARTracing.status { (result) in
                 switch result {
                 case let .success(state):
