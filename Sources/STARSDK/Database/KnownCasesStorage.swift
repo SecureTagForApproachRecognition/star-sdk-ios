@@ -14,6 +14,7 @@ class KnownCasesStorage {
     /// Column definitions
     let idColumn = Expression<Int>("id")
     let dayColumn = Expression<String>("day")
+    let onsetColumn = Expression<String>("onset")
     let keyColumn = Expression<Data>("key")
 
     /// Initializer
@@ -26,40 +27,37 @@ class KnownCasesStorage {
     /// Create the table
     private func createTable() throws {
         try database.run(table.create(ifNotExists: true) { t in
-            t.column(idColumn, primaryKey: true)
+            t.column(idColumn, primaryKey: .autoincrement)
             t.column(dayColumn)
-            t.column(keyColumn)
+            t.column(onsetColumn)
+            t.column(keyColumn, primaryKey: true)
         })
+    }
+
+    /// update the list of known cases
+    /// - Parameter kcs: known cases
+    /// - Parameter day: day identifier
+    func update(knownCases kcs: [KnownCaseModel], day: String) throws {
+        // Remove old values
+        let casesToRemove = table.filter(dayColumn == day)
+        try database.run(casesToRemove.delete())
+
+        try database.transaction {
+            try kcs.forEach { try add(knownCase: $0, day: day) }
+        }
     }
 
     /// add a known case
     /// - Parameter kc: known case
-    func add(knownCase kc: KnownCaseModel) throws {
+    /// - Parameter day: day identifier
+    private func add(knownCase kc: KnownCaseModel, day: String) throws {
         let insert = table.insert(
-            dayColumn <- kc.day,
+            dayColumn <- day,
+            onsetColumn <- kc.onset,
             keyColumn <- kc.key
         )
+
         try database.run(insert)
-    }
-
-    /// remove known case
-    /// - Parameter kc: known case
-    func remove(knownCase kc: KnownCaseModel) throws {
-        let removedCase = table.filter(idColumn == kc.id)
-        try database.run(removedCase.delete())
-    }
-
-    /// add multiple known cases
-    /// - Parameter kcs:
-    func add(knownCases kcs: [KnownCaseModel]) throws {
-        try database.transaction {
-            try kcs.forEach { try add(knownCase: $0) }
-        }
-    }
-
-    /// Current max identifier to speed up parsing
-    var maxId: Int {
-        return (try? database.scalar(table.select(idColumn.max))) ?? 0
     }
 
     /// Delete all entries
@@ -71,7 +69,7 @@ class KnownCasesStorage {
     /// - Parameter block: execution block should return false to break looping
     func loopThrough(block: (KnownCaseModel) -> Bool) throws {
         for row in try database.prepare(table) {
-            let model = KnownCaseModel(id: row[idColumn], action: nil, key: row[keyColumn], day: row[dayColumn])
+            let model = KnownCaseModel(id: row[idColumn], key: row[keyColumn], onset: row[onsetColumn])
             if !block(model) {
                 break
             }

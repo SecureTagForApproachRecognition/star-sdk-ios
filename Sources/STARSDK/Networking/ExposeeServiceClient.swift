@@ -58,7 +58,6 @@ class ExposeeServiceClient {
             }
             do {
                 let decoder = JSONDecoder()
-                decoder.userInfo[KnownCaseModel.dayDecoderUserInfoKey] = dayIdentifier
 
                 let dayData = try decoder.decode(KnownCasesResponse.self, from: responseData)
 

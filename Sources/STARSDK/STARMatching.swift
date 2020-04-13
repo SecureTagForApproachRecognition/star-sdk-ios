@@ -42,8 +42,8 @@ class STARMatcher {
             return true
         })
 
-        if let matchingHandshakeId = matchingHandshakeId {
-            try database.handshakesStorage.addKnownCase(knownCase.id, to: matchingHandshakeId)
+        if let matchingHandshakeId = matchingHandshakeId, let knownCaseId = knownCase.id {
+            try database.handshakesStorage.addKnownCase(knownCaseId, to: matchingHandshakeId)
             delegate.didFindMatch()
         }
     }

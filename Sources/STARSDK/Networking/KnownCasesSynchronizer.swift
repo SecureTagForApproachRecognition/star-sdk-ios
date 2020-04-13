@@ -93,23 +93,12 @@ class KnownCasesSynchronizer {
 
     /** Process all received day data. */
     private func processDayResults(callback: Callback?) {
-        let currentMaxDate = database.maxId
-        let newKnownCases = (knownCases.map { $0.value.filter { $0.id > currentMaxDate } })
-            .reduce([], +)
-            .sorted { $0.id < $1.id }
 
-        for knownCase in newKnownCases {
-            // TODO: Handle db errors
-            switch knownCase.action {
-            case .ADD:
-                try? database.add(knownCase: knownCase)
-                try? matcher?.checkNewKnownCase(knownCase)
-            case .REMOVE:
-                try? database.remove(knownCase: knownCase)
-            case .none:
-                break
-            }
+        // TODO: Handle db errors
+        for (day, knownCases) in knownCases {
+            try? database.update(knownCases: knownCases, day: day)
         }
+
         callback?(Result.success(()))
     }
 }
