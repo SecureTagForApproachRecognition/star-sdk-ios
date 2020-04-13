@@ -26,4 +26,14 @@ class Default {
             store.set(newValue.rawValue, forKey: "ch.ubique.starsdk.InfectionStatus")
         }
     }
+
+    /// Last date when a discovery happend
+    var lastDiscovery: Date? {
+        get {
+            return store.object(forKey: "ch.ubique.starsdk.lastbtdiscovery") as? Date
+        }
+        set(newValue) {
+            store.set(newValue, forKey: "ch.ubique.starsdk.lastbtdiscovery")
+        }
+    }
 }

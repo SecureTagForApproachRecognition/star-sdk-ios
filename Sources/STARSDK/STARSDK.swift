@@ -78,7 +78,7 @@ class STARSDK {
         synchronizer = KnownCasesSynchronizer(appId: appId, database: database, matcher: matcher)
         applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage)
         broadcaster = BluetoothBroadcastService(starCrypto: starCrypto)
-        discoverer = BluetoothDiscoveryService(storage: database.peripheralStorage)
+        discoverer = BluetoothDiscoveryService()
         state = TracingState(numberOfHandshakes: (try? database.handshakesStorage.count()) ?? 0,
                              trackingState: .stopped,
                              lastSync: Default.shared.lastSync,
@@ -93,6 +93,8 @@ class STARSDK {
         broadcaster.logger = self
         discoverer.logger = self
         database.logger = self
+        NotificationCenter.default.addObserver(self, selector: #selector(willResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         #endif
 
         print(database)
@@ -149,6 +151,13 @@ class STARSDK {
     func startReceiving() throws {
         state.trackingState = .activeReceiving
         discoverer.startScanning()
+    }
+    @objc func didBecomeActive() {
+        log(type: .sdk, "didBecomeActive")
+    }
+
+    @objc func willResignActive() {
+        log(type: .sdk, "willResignActive")
     }
     #endif
 
@@ -311,7 +320,7 @@ extension STARSDK: BluetoothPermissionDelegate {
 #if CALIBRATION
 extension STARSDK: LoggingDelegate {
     func log(type: LogType, _ string: String) {
-        os_log("%@: %@", type.description, string)
+        os_log("%{public}@: %{public}@", type.description, string)
         if let entry = try? database.loggingStorage.log(type: type, message: string) {
             delegate?.didAddLog(entry)
         }

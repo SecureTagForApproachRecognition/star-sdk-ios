@@ -36,13 +36,6 @@ class STARDatabase {
         return _knownCasesStorage
     }
 
-    /// peripheral Storage
-    private let _peripheralStorage: PeripheralStorage
-    var peripheralStorage: PeripheralStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _peripheralStorage
-    }
-
     #if CALIBRATION
     /// logging Storage
     private let _logggingStorage: LoggingStorage
@@ -58,7 +51,6 @@ class STARDatabase {
         connection = try Connection(fileName, readonly: false)
         _knownCasesStorage = try KnownCasesStorage(database: connection)
         _handshakesStorage = try HandshakesStorage(database: connection, knownCasesStorage: _knownCasesStorage)
-        _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
         _logggingStorage = try LoggingStorage(database: connection)
@@ -71,7 +63,6 @@ class STARDatabase {
         try connection.transaction {
             try handshakesStorage.emptyStorage()
             try knownCasesStorage.emptyStorage()
-            try peripheralStorage.emptyStorage()
             #if CALIBRATION
             try loggingStorage.emptyStorage()
             #endif

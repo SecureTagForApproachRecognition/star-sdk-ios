@@ -182,6 +182,9 @@ class HandshakeViewController: UIViewController {
             let interval = HandshakeInterval(identifier: group.key, start: startTime, end: endTime, count: end - start, expectedCount: expectedCount)
             intervals.append(interval)
         }
+        intervals.sort { (lhs, rhs) -> Bool in
+            lhs.start > rhs.start
+        }
         return intervals
     }
 
@@ -268,7 +271,7 @@ extension Data {
     }
 
     var STARHeadIndentifier: String? {
-        let head = self[0..<4]
+        let head = self.prefix(4)
         guard let identifier = String(data: head, encoding: .utf8) else {
             return nil
         }
