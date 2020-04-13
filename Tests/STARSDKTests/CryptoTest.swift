@@ -23,6 +23,14 @@ final class STARTracingCryptoTests: XCTestCase {
         XCTAssertEqual(hex, "wdvvalTpy3jExBEyO6iIHps+HUsrnwgCtMGpi86eq4c=")
     }
 
+    func testHmac() {
+        let secretKey = "pcu8RDQQhvzL7oCOZjLCBdAodQfNK406m1x9JXugxoY="
+        let secretKeyData = Data(base64Encoded: secretKey)!
+        let expected = "M+AgJ345G+6AZYu1Cx2IGD6VL1YigLmFrG0roTmIlQA="
+        let real = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKeyData)
+        XCTAssertEqual(real.base64EncodedString(), expected)
+    }
+
     func testGenerateEphIds() {
         let store = KeyStore()
         let star: STARCryptoModule = STARCryptoModule(store: store)!
@@ -30,7 +38,23 @@ final class STARTracingCryptoTests: XCTestCase {
         let currentEphId = try! star.getCurrentEphId()
         var matchingCount = 0
         for ephId in allEphsOfToday {
+            XCTAssert(ephId.count == CryptoConstants.keyLenght)
             if ephId == currentEphId {
+                matchingCount += 1
+            }
+        }
+        XCTAssert(matchingCount == 1)
+    }
+
+    func testGenerationEphsIdsWithAndorid(){
+        let store = KeyStore()
+        let star: STARCryptoModule = STARCryptoModule(store: store)!
+        let base64SecretKey = "pcu8RDQQhvzL7oCOZjLCBdAodQfNK406m1x9JXugxoY="
+        let base64EncodedEphId = "YJF2WJaDVhnOZqpfBSqfjA=="
+        let allEphId: [Data] = try! star.createEphIds(secretKey: Data(base64Encoded: base64SecretKey)!)
+        var matchingCount = 0
+        for ephId in allEphId {
+            if ephId.base64EncodedString() == base64EncodedEphId {
                 matchingCount += 1
             }
         }
@@ -39,6 +63,8 @@ final class STARTracingCryptoTests: XCTestCase {
 
     static var allTests = [
         ("sha256", testSha256),
-        ("generateEphIds", testGenerateEphIds)
+        ("generateEphIds", testGenerateEphIds),
+        ("generateEphIdsAndroid", testGenerationEphsIdsWithAndorid),
+        ("testHmac", testHmac)
     ]
 }
