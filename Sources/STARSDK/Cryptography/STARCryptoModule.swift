@@ -60,13 +60,15 @@ class STARCryptoModule {
     public func createEphIds(secretKey: Data) throws -> [Data] {
         let hmac = Crypto.hmac(msg: CryptoConstants.broadcastKey, key: secretKey)
 
-        let zeroData = Data(count: 32)
+        let zeroData = Data(count: CryptoConstants.keyLenght * CryptoConstants.numberOfEpochsPerDay)
 
         let aes = try Crypto.AESCTREncrypt(keyData: hmac)
 
         var ephIds = [Data]()
-        for _ in 0..<CryptoConstants.numberOfEpochsPerDay {
-            ephIds.append(try aes.encrypt(data: zeroData).prefix(CryptoConstants.keyLenght))
+        let prgData = try aes.encrypt(data: zeroData)
+        for i in 0..<CryptoConstants.numberOfEpochsPerDay {
+            let pos = i * CryptoConstants.keyLenght
+            ephIds.append(prgData[pos ..< pos + CryptoConstants.keyLenght])
         }
 
         return ephIds

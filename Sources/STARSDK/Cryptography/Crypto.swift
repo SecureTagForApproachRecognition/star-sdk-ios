@@ -42,13 +42,15 @@ public class Crypto {
     class AESCTREncrypt {
 
         let keyData: Data
+
         let keyLength: Int
+
         let ivSize: Int
 
         var cryptLength: Int
-        var options: CCOptions
-        
-        var numBytesEncrypted :size_t = 0
+
+
+        var cryptor: CCCryptorRef? = nil
 
         init(keyData:Data) throws {
             self.keyData = keyData
@@ -58,42 +60,42 @@ public class Crypto {
             ivSize = kCCBlockSizeAES128;
 
             cryptLength = size_t(ivSize + 16 + kCCBlockSizeAES128)
+            let status = keyData.withUnsafeBytes { keyBytes in
+                CCCryptorCreate(CCOperation(kCCEncrypt),
+                                CCAlgorithm(kCCAlgorithmAES),
+                                CCOptions(kCCModeCTR),
+                                keyBytes,
+                                keyLength,
+                                nil,
+                                &cryptor)
+            }
+            if (status != 0) {
+                throw CrypoError.AESError
+            }
+        }
 
-            options   = CCOptions(kCCModeCTR)
+        deinit {
+            CCCryptorRelease(cryptor)
         }
 
         func encrypt(data: Data) throws -> Data {
 
-            var cryptData = Data(count:cryptLength)
+            var cryptData = Data(count:data.count)
 
-            let status = cryptData.withUnsafeMutableBytes {ivBytes in
-                SecRandomCopyBytes(kSecRandomDefault, kCCBlockSizeAES128, ivBytes)
-            }
-
-            if (status != 0) {
-                throw CrypoError.IVError
-            }
-
+            var numBytesEncrypted: size_t = 0
+            
             let cryptStatus = cryptData.withUnsafeMutableBytes { cryptBytes in
                 data.withUnsafeBytes { dataBytes in
-                    keyData.withUnsafeBytes { keyBytes in
-                        CCCrypt(CCOperation(kCCEncrypt),
-                                CCAlgorithm(kCCAlgorithmAES),
-                                options,
-                                keyBytes,
-                                keyLength,
-                                cryptBytes,
-                                dataBytes, data.count,
-                                cryptBytes+kCCBlockSizeAES128, cryptLength,
-                                &numBytesEncrypted)
-                    }
+                    CCCryptorUpdate(cryptor,
+                                    dataBytes,
+                                    data.count,
+                                    cryptBytes,
+                                    data.count,
+                                    &numBytesEncrypted)
                 }
             }
 
-            if UInt32(cryptStatus) == UInt32(kCCSuccess) {
-                cryptData.count = numBytesEncrypted + ivSize
-            }
-            else {
+            if UInt32(cryptStatus) != UInt32(kCCSuccess) {
                 throw CrypoError.AESError
             }
 
