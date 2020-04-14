@@ -51,7 +51,15 @@ class STARMatcher {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension STARMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data _: Data, TXPowerlevel _: Double?, RSSI _: Double?) throws {
-        // Do no realtime matching for now
+    func didDiscover(data : Data, TXPowerlevel : Double?, RSSI : Double?) throws {
+        // Do no realtime matching
+        let handshake = HandshakeModel(timestamp: Date(),
+                                       star: data,
+                                       TXPowerlevel: TXPowerlevel,
+                                       RSSI: RSSI,
+                                       knownCaseId: nil)
+        try database.handshakesStorage.add(handshake: handshake)
+
+        delegate.handShakeAdded(handshake)
     }
 }
