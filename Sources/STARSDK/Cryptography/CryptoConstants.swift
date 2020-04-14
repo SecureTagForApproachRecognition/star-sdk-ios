@@ -14,7 +14,7 @@ enum CryptoConstants {
     static let numberOfDaysToKeepData: Int = 21
     static let numberOfEpochsPerDay: Int = 24 * 12
     static let millisecondsPerEpoch = 24 * 60 * 60 * 1000 / CryptoConstants.numberOfDaysToKeepData
-    //TODO set correct broadcast key
+    // TODO: set correct broadcast key
     static let broadcastKey: Data = "TODOTODOTODOTODOTODOTODOTODOTODOTODO".data(using: .utf8)!
 }
 

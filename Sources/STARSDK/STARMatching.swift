@@ -51,7 +51,7 @@ class STARMatcher {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension STARMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws {
-      // Do no realtime matching for now
+    func didDiscover(data _: Data, TXPowerlevel _: Double?, RSSI _: Double?) throws {
+        // Do no realtime matching for now
     }
 }

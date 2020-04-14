@@ -42,6 +42,4 @@ class Default {
             store.set(newValue.rawValue, forKey: "ch.ubique.starsdk.sampleapp.tracingMode")
         }
     }
-
-
 }

@@ -2,7 +2,6 @@ import Foundation
 
 /// A model for the digital handshake
 public struct HandshakeModel {
-
     public var identifier: Int?
 
     /// The timestamp of the handshake

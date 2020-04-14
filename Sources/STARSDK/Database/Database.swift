@@ -12,7 +12,7 @@ class STARDatabase {
     private(set) var isDestroyed = false
 
     #if CALIBRATION
-    public weak var logger: LoggingDelegate?
+        public weak var logger: LoggingDelegate?
     #endif
 
     /// application Storage
@@ -44,12 +44,12 @@ class STARDatabase {
     }
 
     #if CALIBRATION
-    /// logging Storage
-    private let _logggingStorage: LoggingStorage
-    var loggingStorage: LoggingStorage {
-        guard !isDestroyed else { fatalError("Database is destroyed") }
-        return _logggingStorage
-    }
+        /// logging Storage
+        private let _logggingStorage: LoggingStorage
+        var loggingStorage: LoggingStorage {
+            guard !isDestroyed else { fatalError("Database is destroyed") }
+            return _logggingStorage
+        }
     #endif
 
     /// Initializer
@@ -61,7 +61,7 @@ class STARDatabase {
         _peripheralStorage = try PeripheralStorage(database: connection)
         _applicationStorage = try ApplicationStorage(database: connection)
         #if CALIBRATION
-        _logggingStorage = try LoggingStorage(database: connection)
+            _logggingStorage = try LoggingStorage(database: connection)
         #endif
     }
 
@@ -73,7 +73,7 @@ class STARDatabase {
             try knownCasesStorage.emptyStorage()
             try peripheralStorage.emptyStorage()
             #if CALIBRATION
-            try loggingStorage.emptyStorage()
+                try loggingStorage.emptyStorage()
             #endif
         }
     }

@@ -102,7 +102,6 @@ class HandshakesStorage {
     }
 
     func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
-
         var query = table
 
         // Limit
@@ -125,7 +124,7 @@ class HandshakesStorage {
             query = query.filter(associatedKnownCaseColumn != nil)
         }
 
-        var handshakes = Array<HandshakeModel>()
+        var handshakes = [HandshakeModel]()
         for row in try database.prepare(query) {
             let model = HandshakeModel(timestamp: row[timestampColumn],
                                        star: row[starColumn],
@@ -158,7 +157,6 @@ class HandshakesStorage {
 }
 
 public struct HandshakeRequest {
-
     public struct FilterOption: OptionSet {
         public let rawValue: Int
         public static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
@@ -166,10 +164,12 @@ public struct HandshakeRequest {
             self.rawValue = rawValue
         }
     }
+
     public enum SortingOption {
         case ascendingTimestamp
         case descendingTimestamp
     }
+
     public let filterOption: FilterOption
     public let sortingOption: SortingOption
     public let offset: Int
@@ -197,8 +197,7 @@ public struct HandshakeResponse {
     }
 }
 
-
-fileprivate extension Date {
+private extension Date {
     var dayMax: Date {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -208,6 +207,7 @@ fileprivate extension Date {
         components.second = 59
         return calendar.date(from: components)!
     }
+
     var dayMin: Date {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "UTC")!

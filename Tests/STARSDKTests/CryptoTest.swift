@@ -1,15 +1,17 @@
 @testable import STARSDK
 import XCTest
 
-fileprivate class KeyStore: SecretKeyStorageProtocol {
+private class KeyStore: SecretKeyStorageProtocol {
     var keys: [SecretKey] = []
 
     func get() throws -> [SecretKey] {
         return keys
     }
+
     func set(_ object: [SecretKey]) throws {
-        self.keys = object
+        keys = object
     }
+
     func removeAllObject() {
         keys = []
     }
@@ -47,7 +49,7 @@ final class STARTracingCryptoTests: XCTestCase {
         XCTAssert(matchingCount == 1)
     }
 
-    func testGenerationEphsIdsWithAndorid(){
+    func testGenerationEphsIdsWithAndorid() {
         let store = KeyStore()
         let star: STARCryptoModule = STARCryptoModule(store: store)!
         let base64SecretKey = "MZbZmgsA+9b0A8mkkcAQJcww727M8tlI1zO/2eGZ/DA="
@@ -66,7 +68,7 @@ final class STARTracingCryptoTests: XCTestCase {
         XCTAssert(matchingCount == 2)
     }
 
-    func testReset(){
+    func testReset() {
         let store = KeyStore()
         var star: STARCryptoModule? = STARCryptoModule(store: store)!
         let ephId = try! star!.getCurrentEphId()
@@ -80,19 +82,19 @@ final class STARTracingCryptoTests: XCTestCase {
         XCTAssertNotEqual(ephId, newEphId)
     }
 
-    func testTokenToday(){
+    func testTokenToday() {
         let key = "lTSYc/ER08HD1/ucwBJOiDLDEYiJruKqTHCiOFavzwA="
         let token = "yJNfwAP8UaF+BZKbUiVwhUghLz60SOqPE0I="
         testKeyAndTokenToday(key, token, found: true)
     }
 
-    func testWrongTokenToday(){
+    func testWrongTokenToday() {
         let key = "yJNfwAP8UaF+BZKbUiVwhUghLz60SOqPE0I="
         let token = "lTSYc/ER08HD1/ucwBJOiDLDEYiJruKqTHCiOFavzwA="
         testKeyAndTokenToday(key, token, found: false)
     }
 
-    func testKeyAndTokenToday(_ key: String, _ token: String, found: Bool){
+    func testKeyAndTokenToday(_ key: String, _ token: String, found: Bool) {
         let store = KeyStore()
         let star: STARCryptoModule? = STARCryptoModule(store: store)!
 
@@ -104,9 +106,7 @@ final class STARTracingCryptoTests: XCTestCase {
             handshakes
         })
         XCTAssertEqual(h != nil, found)
-
     }
-
 
     static var allTests = [
         ("sha256", testSha256),
@@ -115,6 +115,6 @@ final class STARTracingCryptoTests: XCTestCase {
         ("testHmac", testHmac),
         ("testReset", testReset),
         ("testTokenToday", testTokenToday),
-        ("testWrongTokenToday", testWrongTokenToday)
+        ("testWrongTokenToday", testWrongTokenToday),
     ]
 }

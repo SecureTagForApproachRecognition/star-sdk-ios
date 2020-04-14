@@ -21,8 +21,8 @@ class BluetoothBroadcastService: NSObject {
     public weak var permissionDelegate: BluetoothPermissionDelegate?
 
     #if CALIBRATION
-    /// A logger to output messages
-    public weak var logger: LoggingDelegate?
+        /// A logger to output messages
+        public weak var logger: LoggingDelegate?
     #endif
 
     /// The service ID for the current application
@@ -55,7 +55,7 @@ class BluetoothBroadcastService: NSObject {
     public func startService() {
         guard peripheralManager == nil else {
             #if CALIBRATION
-            logger?.log(type: .sender, "startService service already started")
+                logger?.log(type: .sender, "startService service already started")
             #endif
             return
         }
@@ -68,7 +68,7 @@ class BluetoothBroadcastService: NSObject {
     /// Stops the broadcast service
     public func stopService() {
         #if CALIBRATION
-        logger?.log(type: .sender, "stopping Services")
+            logger?.log(type: .sender, "stopping Services")
         #endif
 
         peripheralManager?.removeAllServices()
@@ -93,7 +93,7 @@ class BluetoothBroadcastService: NSObject {
         peripheralManager?.add(service!)
 
         #if CALIBRATION
-        logger?.log(type: .sender, "added Service with \(serviceId.uuidString)")
+            logger?.log(type: .sender, "added Service with \(serviceId.uuidString)")
         #endif
     }
 }
@@ -103,7 +103,7 @@ class BluetoothBroadcastService: NSObject {
 extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
         #if CALIBRATION
-        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidUpdateState")
+            logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidUpdateState")
         #endif
 
         switch peripheral.state {
@@ -120,7 +120,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error _: Error?) {
         #if CALIBRATION
-        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerdidAddservice")
+            logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerdidAddservice")
         #endif
 
         peripheralManager?.startAdvertising([
@@ -130,12 +130,12 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     }
 
     #if CALIBRATION
-    func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
-        logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
-        if let error = error {
-            logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+        func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
+            logger?.log(type: .sender, state: peripheral.state, prefix: "peripheralManagerDidStartAdvertising")
+            if let error = error {
+                logger?.log(type: .sender, "peripheralManagerDidStartAdvertising error: \(error.localizedDescription)")
+            }
         }
-    }
     #endif
 
     func peripheralManager(_: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
@@ -144,12 +144,12 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             request.value = data
             peripheralManager?.respond(to: request, withResult: .success)
             #if CALIBRATION
-            logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
+                logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
             #endif
         } catch {
             peripheralManager?.respond(to: request, withResult: .unlikelyError)
             #if CALIBRATION
-            logger?.log(type: .sender, "← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
+                logger?.log(type: .sender, "← ❌ didReceiveRead: Could not respond because token was not generated \(error)")
             #endif
         }
     }
@@ -159,7 +159,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
             let service = services.first(where: { $0.uuid == serviceId }) {
             self.service = service
             #if CALIBRATION
-            logger?.log(type: .sender, "PeripheralManager#willRestoreState services :\(services.count)")
+                logger?.log(type: .sender, "PeripheralManager#willRestoreState services :\(services.count)")
             #endif
         }
     }

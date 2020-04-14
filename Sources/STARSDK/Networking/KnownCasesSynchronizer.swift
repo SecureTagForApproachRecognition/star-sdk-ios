@@ -93,7 +93,6 @@ class KnownCasesSynchronizer {
 
     /** Process all received day data. */
     private func processDayResults(callback: Callback?) {
-
         // TODO: Handle db errors
         for (day, knownCases) in knownCases {
             try? database.update(knownCases: knownCases, day: day)

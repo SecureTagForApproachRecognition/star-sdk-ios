@@ -1,10 +1,9 @@
 //
 
-import UIKit
 import STARSDK_CALIBRATION
+import UIKit
 
 class ParametersViewController: UIViewController {
-
     let stackView = UIStackView()
 
     let reconnectionDelayInput = UITextField()
@@ -17,7 +16,7 @@ class ParametersViewController: UIViewController {
         }
     }
 
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -26,10 +25,10 @@ class ParametersViewController: UIViewController {
         if #available(iOS 13.0, *) {
             self.view.backgroundColor = .systemBackground
         } else {
-            self.view.backgroundColor = .white
+            view.backgroundColor = .white
         }
-        self.view.addSubview(stackView)
-        stackView.snp.makeConstraints { (make) in
+        view.addSubview(stackView)
+        stackView.snp.makeConstraints { make in
             make.left.right.bottom.equalTo(self.view.layoutMarginsGuide)
             make.top.equalTo(self.view.layoutMarginsGuide).inset(12)
         }
@@ -68,7 +67,7 @@ class ParametersViewController: UIViewController {
         stackView.addArrangedView(UIView())
     }
 
-    @objc func updateReconnectionDelay(){
+    @objc func updateReconnectionDelay() {
         let delay = reconnectionDelayInput.text ?? "0"
         let intDelay = Int(delay) ?? 0
         Default.shared.reconnectionDelay = intDelay
@@ -79,15 +78,16 @@ class ParametersViewController: UIViewController {
 }
 
 extension ParametersViewController: STARTracingDelegate {
-    func STARTracingStateChanged(_ state: TracingState) {}
+    func STARTracingStateChanged(_: TracingState) {}
 }
 
 extension ParametersViewController: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+    func textField(_: UITextField, shouldChangeCharactersIn _: NSRange, replacementString string: String) -> Bool {
         let allowedCharacters = CharacterSet.decimalDigits
         let characterSet = CharacterSet(charactersIn: string)
         return allowedCharacters.isSuperset(of: characterSet)
     }
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true

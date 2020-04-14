@@ -3,7 +3,6 @@
 import Foundation
 
 struct Epoch: Codable, CustomStringConvertible, Equatable {
-
     let timestamp: TimeInterval
 
     init(date: Date = Date()) {

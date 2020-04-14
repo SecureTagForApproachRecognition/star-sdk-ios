@@ -7,6 +7,6 @@ struct SecretKey: Codable, CustomStringConvertible {
     let keyData: Data
 
     var description: String {
-        return "<SecretKey_\(self.epoch): \(self.keyData.hexEncodedString)>"
+        return "<SecretKey_\(epoch): \(keyData.hexEncodedString)>"
     }
 }

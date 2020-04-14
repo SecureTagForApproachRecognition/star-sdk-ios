@@ -4,7 +4,7 @@
 public enum STARMode: Equatable {
     case production
     #if CALIBRATION
-    case calibration(identifierPrefix: String)
+        case calibration(identifierPrefix: String)
     #endif
 
     static var current: STARMode = .production

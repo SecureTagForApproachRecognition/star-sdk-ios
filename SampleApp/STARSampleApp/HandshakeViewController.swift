@@ -1,11 +1,10 @@
 //
 
+import SnapKit
 import STARSDK_CALIBRATION
 import UIKit
-import SnapKit
 
 class HandshakeViewController: UIViewController {
-
     private var tableView: UITableView?
 
     private let MAX_NUMBER_OF_MISSING_HANDSHAKES = 3
@@ -17,6 +16,7 @@ class HandshakeViewController: UIViewController {
     private enum Mode {
         case raw, grouped
     }
+
     private var mode: Mode = .raw {
         didSet {
             reloadModel()
@@ -32,9 +32,10 @@ class HandshakeViewController: UIViewController {
         if #available(iOS 13.0, *) {
             tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "person.3.fill"), tag: 0)
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
-    required init?(coder: NSCoder) {
+
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -44,7 +45,7 @@ class HandshakeViewController: UIViewController {
         tableView!.dataSource = self
         tableView!.delegate = self
         view.addSubview(tableView!)
-        tableView!.snp.makeConstraints { (make) in
+        tableView!.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
@@ -58,10 +59,10 @@ class HandshakeViewController: UIViewController {
         segmentedControl.selectedSegmentIndex = 0
         navigationItem.titleView = segmentedControl
 
-        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
 
-    @objc func didClearData(notification: Notification) {
+    @objc func didClearData(notification _: Notification) {
         cachedHandshakes.removeAll()
         cachedHandshakeIntervals.removeAll()
         nextRequest = nil
@@ -130,7 +131,7 @@ class HandshakeViewController: UIViewController {
                 var indexPathes: [IndexPath] = []
                 let base = response.handshakes.count
                 let target = base + response.handshakes.count
-                for rowIndex in base..<target {
+                for rowIndex in base ..< target {
                     indexPathes.append(IndexPath(row: rowIndex, section: 0))
                 }
                 cachedHandshakes.append(contentsOf: response.handshakes)
@@ -195,8 +196,7 @@ class HandshakeViewController: UIViewController {
 }
 
 extension HandshakeViewController: UITableViewDataSource {
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_: UITableView, numberOfRowsInSection _: Int) -> Int {
         switch mode {
         case .grouped:
             return cachedHandshakeIntervals.count
@@ -236,8 +236,7 @@ extension HandshakeViewController: UITableViewDataSource {
 }
 
 extension HandshakeViewController: UITableViewDelegate {
-
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity _: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         let targetOffset = CGFloat(targetContentOffset.pointee.y)
         let maximumOffset = scrollView.adjustedContentInset.bottom + scrollView.contentSize.height - scrollView.frame.size.height
 
@@ -248,9 +247,8 @@ extension HandshakeViewController: UITableViewDelegate {
 }
 
 extension HandshakeViewController: STARTracingDelegate {
+    func STARTracingStateChanged(_: TracingState) {}
 
-    func STARTracingStateChanged(_ state: TracingState) {}
-    
     func didAddHandshake(_ handshake: HandshakeModel) {
         switch mode {
         case .raw:
@@ -268,7 +266,7 @@ extension Data {
     }
 
     var STARHeadIndentifier: String? {
-        let head = self[0..<4]
+        let head = self[0 ..< 4]
         guard let identifier = String(data: head, encoding: .utf8) else {
             return nil
         }

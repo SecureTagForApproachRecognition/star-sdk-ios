@@ -6,25 +6,24 @@
 //  Copyright © 2020 Ubique. All rights reserved.
 //
 
-import UIKit
 import STARSDK_CALIBRATION
+import UIKit
 
 class LogCell: UITableViewCell {
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+    override init(style _: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
-        self.textLabel?.numberOfLines = 0
-        self.textLabel?.font = .boldSystemFont(ofSize: 12.0)
-        self.detailTextLabel?.numberOfLines = 0
-        self.selectionStyle = .none
+        textLabel?.numberOfLines = 0
+        textLabel?.font = .boldSystemFont(ofSize: 12.0)
+        detailTextLabel?.numberOfLines = 0
+        selectionStyle = .none
     }
 
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
 
 class LogsViewController: UIViewController {
-
     let tableView = UITableView()
 
     let refreshControl = UIRefreshControl()
@@ -39,16 +38,16 @@ class LogsViewController: UIViewController {
         if #available(iOS 13.0, *) {
             tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: "list.bullet"), tag: 0)
         }
-        self.loadLogs()
-        NotificationCenter.default.addObserver(self, selector: #selector(self.didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
+        loadLogs()
+        NotificationCenter.default.addObserver(self, selector: #selector(didClearData(notification:)), name: Notification.Name("ClearData"), object: nil)
     }
 
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func loadView() {
-        self.view = tableView
+        view = tableView
     }
 
     override func viewDidLoad() {
@@ -59,17 +58,17 @@ class LogsViewController: UIViewController {
         refreshControl.addTarget(self, action: #selector(reloadLogs), for: .allEvents)
     }
 
-    @objc func didClearData(notification: Notification) {
+    @objc func didClearData(notification _: Notification) {
         logs = []
-        self.tableView.reloadData()
+        tableView.reloadData()
     }
 
     @objc
     func reloadLogs() {
-        self.loadLogs()
+        loadLogs()
     }
 
-    func loadLogs(request: LogRequest = LogRequest(sorting: .desc, offset: 0, limit: 200)){
+    func loadLogs(request: LogRequest = LogRequest(sorting: .desc, offset: 0, limit: 200)) {
         DispatchQueue.global(qos: .background).async {
             if let resp = try? STARTracing.getLogs(request: request) {
                 self.nextRequest = resp.nextRequest
@@ -83,23 +82,22 @@ class LogsViewController: UIViewController {
                     }
                 }
             }
-
         }
     }
 }
 
-
-
 extension LogsViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in _: UITableView) -> Int {
         return 1
     }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+    func tableView(_: UITableView, numberOfRowsInSection _: Int) -> Int {
         return logs.count
     }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.row == (logs.count - 1),
-           let nextRequest = self.nextRequest {
+            let nextRequest = self.nextRequest {
             loadLogs(request: nextRequest)
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: "logCell", for: indexPath) as! LogCell
@@ -119,14 +117,14 @@ extension LogsViewController: UITableViewDataSource {
 }
 
 extension LogsViewController: STARTracingDelegate {
-    func STARTracingStateChanged(_ state: TracingState) {}
+    func STARTracingStateChanged(_: TracingState) {}
 
     func didAddLog(_ entry: LogEntry) {
-        self.logs.insert(entry, at: 0)
+        logs.insert(entry, at: 0)
         if view.superview != nil {
-            self.tableView.reloadData()
+            tableView.reloadData()
         }
-        self.nextRequest?.offset += 1
+        nextRequest?.offset += 1
     }
 }
 

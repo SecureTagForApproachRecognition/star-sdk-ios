@@ -1,7 +1,7 @@
 //
 
-import Foundation
 import CommonCrypto
+import Foundation
 
 class STARCryptoModule {
     private let store: SecretKeyStorageProtocol
@@ -9,7 +9,7 @@ class STARCryptoModule {
     init?(store: SecretKeyStorageProtocol = SecretKeyStorage.shared) {
         self.store = store
         do {
-            let keys  = try store.get()
+            let keys = try store.get()
             if keys.isEmpty {
                 try generateInitialSecretKey()
             }
@@ -66,7 +66,7 @@ class STARCryptoModule {
 
         var ephIds = [Data]()
         let prgData = try aes.encrypt(data: zeroData)
-        for i in 0..<CryptoConstants.numberOfEpochsPerDay {
+        for i in 0 ..< CryptoConstants.numberOfEpochsPerDay {
             let pos = i * CryptoConstants.keyLenght
             ephIds.append(prgData[pos ..< pos + CryptoConstants.keyLenght])
         }
@@ -81,7 +81,7 @@ class STARCryptoModule {
         return try createEphIds(secretKey: currentSk)[counter]
     }
 
-    public func checkContacts(secretKey: Data, onsetDate: Epoch, bucketDate: Epoch, getHandshake: (Date)->([HandshakeModel])) throws -> HandshakeModel? {
+    public func checkContacts(secretKey: Data, onsetDate: Epoch, bucketDate: Epoch, getHandshake: (Date) -> ([HandshakeModel])) throws -> HandshakeModel? {
         var dayToTest: Epoch = onsetDate
         var secretKeyForDay: Data = secretKey
         while dayToTest.isBefore(other: bucketDate) {
@@ -92,9 +92,9 @@ class STARCryptoModule {
                 continue
             }
 
-            //generate all ephIds for day
+            // generate all ephIds for day
             let ephIds = try createEphIds(secretKey: secretKeyForDay)
-            //check all handshakes if they match any of the ephIds
+            // check all handshakes if they match any of the ephIds
             for handshake in handshakesOnDay {
                 for ephId in ephIds {
                     if handshake.star == ephId {
@@ -103,7 +103,7 @@ class STARCryptoModule {
                 }
             }
 
-            //update day to next day and rotate sk accordingly
+            // update day to next day and rotate sk accordingly
             dayToTest = dayToTest.getNext()
             secretKeyForDay = getSKt1(SKt0: secretKeyForDay)
         }

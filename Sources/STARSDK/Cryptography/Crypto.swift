@@ -1,12 +1,12 @@
 //
 
-import Foundation
 import CommonCrypto
+import Foundation
 
 public class Crypto {
     public static func sha256(_ data: Data) -> Data {
         var digest = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
-        digest.withUnsafeMutableBytes { (rawMutableBufferPointer) in
+        digest.withUnsafeMutableBytes { rawMutableBufferPointer in
             let bufferPointer = rawMutableBufferPointer.bindMemory(to: UInt8.self)
             _ = data.withUnsafeBytes {
                 CC_SHA256($0.baseAddress, UInt32(data.count), bufferPointer.baseAddress)
@@ -38,16 +38,14 @@ public class Crypto {
         return macData
     }
 
-
     class AESCTREncrypt {
-
         let keyData: Data
 
         let keyLength: Int
 
-        var cryptor: CCCryptorRef? = nil
+        var cryptor: CCCryptorRef?
 
-        init(keyData:Data) throws {
+        init(keyData: Data) throws {
             self.keyData = keyData
 
             keyLength = keyData.count
@@ -67,7 +65,7 @@ public class Crypto {
                                                CCOptions(kCCModeOptionCTR_BE),
                                                &cryptor)
             }
-            if (status != 0) {
+            if status != 0 {
                 throw CrypoError.AESError
             }
         }
@@ -77,8 +75,7 @@ public class Crypto {
         }
 
         func encrypt(data: Data) throws -> Data {
-
-            var cryptData = Data(count:data.count)
+            var cryptData = Data(count: data.count)
 
             var numBytesEncrypted: size_t = 0
 
@@ -99,7 +96,7 @@ public class Crypto {
                 throw CrypoError.AESError
             }
 
-            return cryptData;
+            return cryptData
         }
     }
 }

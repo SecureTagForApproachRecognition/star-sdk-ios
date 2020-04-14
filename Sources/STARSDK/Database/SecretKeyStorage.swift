@@ -14,7 +14,6 @@ protocol SecretKeyStorageProtocol {
 }
 
 class SecretKeyStorage: SecretKeyStorageProtocol {
-
     static let shared = SecretKeyStorage()
 
     private let key: String = "ch.ubique.keylist"
@@ -40,12 +39,12 @@ class SecretKeyStorage: SecretKeyStorageProtocol {
             throw KeychainError.cannotAccess
         }
         let data = (item as! CFData) as Data
-        return try self.decoder.decode([SecretKey].self, from: data)
+        return try decoder.decode([SecretKey].self, from: data)
     }
 
     func set(_ object: [SecretKey]) throws {
-        let data = try self.encoder.encode(object)
-        
+        let data = try encoder.encode(object)
+
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword as String,
             kSecAttrAccount as String: key,
