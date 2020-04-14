@@ -169,7 +169,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         RSSICache[peripheral.identifier] = Double(truncating: RSSI)
 
         if let manuData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
-            manuData.count == 28,
+            manuData.count == CryptoConstants.keyLenght + 2,
             manuData[0 ..< 2].withUnsafeBytes({ $0.load(as: UInt16.self) }) == BluetoothConstants.androidManufacturerId {
             // drop manufacturer identifier
             let data = manuData.dropFirst(2)
