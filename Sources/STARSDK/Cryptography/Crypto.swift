@@ -52,19 +52,20 @@ public class Crypto {
 
             keyLength = keyData.count
 
-            let status = keyData.withUnsafeBytes { keyBytes in
-                CCCryptorCreateWithMode(CCOperation(kCCEncrypt),
-                                        CCMode(kCCModeCTR),
-                                        CCAlgorithm(kCCAlgorithmAES),
-                                        CCPadding(ccNoPadding),
-                                        nil,
-                                        keyBytes,
-                                        keyLength,
-                                        nil,
-                                        0,
-                                        0,
-                                        CCOptions(kCCModeOptionCTR_BE),
-                                        &cryptor)
+            let status = keyData.withUnsafeBytes { keyBytes -> CCCryptorStatus in
+                let keyBuffer: UnsafeRawPointer = keyBytes.baseAddress!
+                return CCCryptorCreateWithMode(CCOperation(kCCEncrypt),
+                                               CCMode(kCCModeCTR),
+                                               CCAlgorithm(kCCAlgorithmAES),
+                                               CCPadding(ccNoPadding),
+                                               nil,
+                                               keyBuffer,
+                                               keyLength,
+                                               nil,
+                                               0,
+                                               0,
+                                               CCOptions(kCCModeOptionCTR_BE),
+                                               &cryptor)
             }
             if (status != 0) {
                 throw CrypoError.AESError
@@ -80,15 +81,17 @@ public class Crypto {
             var cryptData = Data(count:data.count)
 
             var numBytesEncrypted: size_t = 0
-            
-            let cryptStatus = cryptData.withUnsafeMutableBytes { cryptBytes in
-                data.withUnsafeBytes { dataBytes in
-                    CCCryptorUpdate(cryptor,
-                                    dataBytes,
-                                    data.count,
-                                    cryptBytes,
-                                    data.count,
-                                    &numBytesEncrypted)
+
+            let cryptStatus = cryptData.withUnsafeMutableBytes { cryptBytes -> CCCryptorStatus in
+                let cryptBuffer: UnsafeMutableRawPointer = cryptBytes.baseAddress!
+                return data.withUnsafeBytes { dataBytes -> CCCryptorStatus in
+                    let dataBuffer: UnsafeRawPointer = dataBytes.baseAddress!
+                    return CCCryptorUpdate(cryptor,
+                                           dataBuffer,
+                                           data.count,
+                                           cryptBuffer,
+                                           data.count,
+                                           &numBytesEncrypted)
                 }
             }
 
