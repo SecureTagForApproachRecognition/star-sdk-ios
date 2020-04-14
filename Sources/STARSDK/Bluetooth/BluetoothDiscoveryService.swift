@@ -44,27 +44,12 @@ class BluetoothDiscoveryService: NSObject {
     /// Identifier of the background task
     private var backgroundTask: UIBackgroundTaskIdentifier?
 
-    /// All service ID to scan for
-    private var serviceIds: [CBUUID] = [] {
-        didSet {
-            if oldValue != serviceIds {
-                updateServices()
-            }
-        }
-    }
-
     /// Initialize the discovery object with a storage.
     /// - Parameters:
     ///   - storage: The storage.
     init(storage: PeripheralStorage) {
         self.storage = storage
         super.init()
-    }
-
-    /// Sets the list of service IDs to scan for
-    /// - Parameter serviceIDs: The list of service IDs
-    public func set(serviceIDs: [String]) {
-        serviceIds = serviceIDs.map(CBUUID.init(string:))
     }
 
     /// Starts a background task
@@ -94,16 +79,14 @@ class BluetoothDiscoveryService: NSObject {
     /// Update all services
     private func updateServices() {
         guard manager?.state == .some(.poweredOn) else { return }
-        if serviceIds != [] {
-            manager?.scanForPeripherals(withServices: serviceIds, options: [
-                CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
-            ])
-            #if CALIBRATION
-                DispatchQueue.main.async {
-                    self.logger?.log(type: .receiver, " scanning for \(self.serviceIds.map { $0.uuidString }.joined(separator: ", "))")
-                }
-            #endif
-        }
+        manager?.scanForPeripherals(withServices: [BluetoothConstants.serviceCBUUID], options: [
+            CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
+        ])
+        #if CALIBRATION
+            DispatchQueue.main.async {
+                self.logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
+            }
+        #endif
     }
 
     /// Start the scanning service for nearby devices
@@ -113,14 +96,12 @@ class BluetoothDiscoveryService: NSObject {
         #endif
         if manager != nil {
             manager?.stopScan()
-            if serviceIds != [] {
-                manager?.scanForPeripherals(withServices: serviceIds, options: [
-                    CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
-                ])
-                #if CALIBRATION
-                    logger?.log(type: .receiver, " scanning for \(serviceIds.map { $0.uuidString }.joined(separator: ", "))")
-                #endif
-            }
+            manager?.scanForPeripherals(withServices: [BluetoothConstants.serviceCBUUID], options: [
+                CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
+            ])
+            #if CALIBRATION
+                logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
+            #endif
         } else {
             manager = CBCentralManager(delegate: self, queue: nil, options: [
                 CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
@@ -150,11 +131,11 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
             logger?.log(type: .receiver, state: central.state, prefix: "centralManagerDidUpdateState")
         #endif
         switch central.state {
-        case .poweredOn where !serviceIds.isEmpty:
+        case .poweredOn:
             #if CALIBRATION
-                logger?.log(type: .receiver, " scanning for \(serviceIds.map { $0.uuidString }.joined(separator: ", "))")
+                logger?.log(type: .receiver, " scanning for \(BluetoothConstants.serviceCBUUID.uuidString)")
             #endif
-            manager?.scanForPeripherals(withServices: serviceIds, options: [
+            manager?.scanForPeripherals(withServices: [BluetoothConstants.serviceCBUUID], options: [
                 CBCentralManagerOptionShowPowerAlertKey: NSNumber(booleanLiteral: true),
             ])
             peripheralsToDiscard?.forEach { peripheral in
@@ -223,7 +204,7 @@ extension BluetoothDiscoveryService: CBCentralManagerDelegate {
         #endif
         try? storage.setConnection(uuid: peripheral.identifier)
         peripheral.delegate = self
-        peripheral.discoverServices(serviceIds)
+        peripheral.discoverServices([BluetoothConstants.serviceCBUUID])
         peripheral.readRSSI()
     }
 
@@ -383,7 +364,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             #endif
             return
         }
-        if let service = peripheral.services?.first(where: { serviceIds.contains($0.uuid) }) {
+        if let service = peripheral.services?.first(where: { $0.uuid == BluetoothConstants.serviceCBUUID }) {
             peripheral.discoverCharacteristics([BluetoothConstants.characteristicsCBUUID], for: service)
         } else {
             #if CALIBRATION

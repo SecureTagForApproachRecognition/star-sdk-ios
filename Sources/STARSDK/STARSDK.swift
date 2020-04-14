@@ -97,12 +97,10 @@ class STARSDK {
 
         print(database)
 
-        updateServiceIds()
         try applicationSynchronizer.sync { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
-                self.updateServiceIds()
                 if let desc = try? self.database.applicationStorage.descriptor(for: self.appId) {
                     let client = ExposeeServiceClient(descriptor: desc)
                     self.cachedTracingServiceClient = client
@@ -112,17 +110,6 @@ class STARSDK {
                     self.state.trackingState = .inactive(error: error)
                     self.stopTracing()
                 }
-            }
-        }
-    }
-
-    /// update discovery service and broadcast service with the new application ids
-    private func updateServiceIds() {
-        let ids: [String] = (try? database.applicationStorage.gattGuids()) ?? []
-        DispatchQueue.main.async {
-            self.discoverer.set(serviceIDs: ids)
-            if let id = try? self.database.applicationStorage.gattGuid(for: self.appId) {
-                self.broadcaster.set(serviceId: id)
             }
         }
     }
@@ -196,7 +183,6 @@ class STARSDK {
         }
         try? applicationSynchronizer.sync { [weak self] result in
             guard let self = self else { return }
-            self.updateServiceIds()
             switch result {
             case .success:
                 if let desc = try? self.database.applicationStorage.descriptor(for: self.appId) {

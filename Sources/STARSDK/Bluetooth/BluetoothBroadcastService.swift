@@ -25,18 +25,6 @@ class BluetoothBroadcastService: NSObject {
         public weak var logger: LoggingDelegate?
     #endif
 
-    /// The service ID for the current application
-    private var serviceId: CBUUID? {
-        didSet {
-            guard oldValue != serviceId else { return }
-            if service == nil {
-                addService()
-            } else {
-                stopService()
-                startService()
-            }
-        }
-    }
 
     /// Create a Bluetooth broadcaster with a STAR crypto algorithm
     /// - Parameter starCrypto: The STAR crypto algorithm
@@ -45,11 +33,6 @@ class BluetoothBroadcastService: NSObject {
         super.init()
     }
 
-    /// Set the service ID
-    /// - Parameter serviceId: The new service ID
-    public func set(serviceId: String) {
-        self.serviceId = CBUUID(string: serviceId)
-    }
 
     /// Start the broadcast service
     public func startService() {
@@ -79,11 +62,10 @@ class BluetoothBroadcastService: NSObject {
 
     /// Adds a bluetooth service and broadcast it
     private func addService() {
-        guard peripheralManager?.state == .some(.poweredOn),
-            let serviceId = self.serviceId else {
+        guard peripheralManager?.state == .some(.poweredOn) else {
             return
         }
-        service = CBMutableService(type: serviceId,
+        service = CBMutableService(type: BluetoothConstants.serviceCBUUID,
                                    primary: true)
         let characteristic = CBMutableCharacteristic(type: BluetoothConstants.characteristicsCBUUID,
                                                      properties: [.read, .notify],
@@ -93,7 +75,7 @@ class BluetoothBroadcastService: NSObject {
         peripheralManager?.add(service!)
 
         #if CALIBRATION
-            logger?.log(type: .sender, "added Service with \(serviceId.uuidString)")
+            logger?.log(type: .sender, "added Service with \(BluetoothConstants.serviceCBUUID.uuidString)")
         #endif
     }
 }
@@ -124,7 +106,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
         #endif
 
         peripheralManager?.startAdvertising([
-            CBAdvertisementDataServiceUUIDsKey: [service.uuid],
+            CBAdvertisementDataServiceUUIDsKey: [BluetoothConstants.serviceCBUUID],
             CBAdvertisementDataLocalNameKey: "",
         ])
     }
@@ -156,7 +138,7 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
 
     func peripheralManager(_: CBPeripheralManager, willRestoreState dict: [String: Any]) {
         if let services: [CBMutableService] = dict[CBPeripheralManagerRestoredStateServicesKey] as? [CBMutableService],
-            let service = services.first(where: { $0.uuid == serviceId }) {
+            let service = services.first(where: { $0.uuid == BluetoothConstants.serviceCBUUID }) {
             self.service = service
             #if CALIBRATION
                 logger?.log(type: .sender, "PeripheralManager#willRestoreState services :\(services.count)")

@@ -22,8 +22,6 @@ struct TracingApplicationDescriptor: Codable {
     var backendBaseUrl: URL
     /// A list of base url
     var listBaseUrl: URL
-    /// The associated buetooth GATT GUID
-    var bleGattGuid: String
     /// The contact person for the record
     var contact: String
 }

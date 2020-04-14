@@ -16,7 +16,6 @@ class ApplicationStorage {
     let descriptionColumn = Expression<String>("description")
     let backendBaseUrlColumn = Expression<URL>("backend_base_url")
     let listBaseUrlColumn = Expression<URL>("list_base_url")
-    let bleGattGuidColumn = Expression<String>("ble_gatt_guid")
     let contactColumn = Expression<String>("contact")
 
     /// Initializer
@@ -33,7 +32,6 @@ class ApplicationStorage {
             t.column(descriptionColumn)
             t.column(backendBaseUrlColumn)
             t.column(listBaseUrlColumn)
-            t.column(bleGattGuidColumn)
             t.column(contactColumn)
         })
     }
@@ -46,23 +44,8 @@ class ApplicationStorage {
                                   descriptionColumn <- ad.description,
                                   backendBaseUrlColumn <- ad.backendBaseUrl,
                                   listBaseUrlColumn <- ad.listBaseUrl,
-                                  bleGattGuidColumn <- ad.bleGattGuid,
                                   contactColumn <- ad.contact)
         try database.run(insert)
-    }
-
-    /// Retrieve all gatt ids
-    func gattGuids() throws -> [String] {
-        let query = table.select(bleGattGuidColumn)
-        return try database.prepare(query).map { $0[bleGattGuidColumn] }
-    }
-
-    /// Retreive the gatt id for a specific application
-    /// - Parameter appid: the application to look for
-    func gattGuid(for appid: String) throws -> String? {
-        let query = table.filter(appIdColumn == appid)
-        guard let row = try database.pluck(query) else { return nil }
-        return row[bleGattGuidColumn]
     }
 
     /// Retreive the descriptor for a specific application
@@ -74,7 +57,6 @@ class ApplicationStorage {
                                             description: row[descriptionColumn],
                                             backendBaseUrl: row[backendBaseUrlColumn],
                                             listBaseUrl: row[listBaseUrlColumn],
-                                            bleGattGuid: row[bleGattGuidColumn],
                                             contact: row[contactColumn])
     }
 
