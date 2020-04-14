@@ -33,15 +33,17 @@ class STARMatcher {
     /// - Parameter knownCase: known Case
     func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws {
         let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = TimeZone(identifier: "UTC")!
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let onset = dateFormatter.date(from: knownCase.onset)!
         let bucketDayDate = dateFormatter.date(from: bucketDay)!
 
         let handshake = try starCrypto.checkContacts(secretKey: knownCase.key, onsetDate: Epoch(date: onset), bucketDate: Epoch(date: bucketDayDate)) { (day) -> ([HandshakeModel]) in
-            (try? database.handshakesStorage.getBy(day: day)) ?? []
+            return (try? database.handshakesStorage.getBy(day: day)) ?? []
         }
 
-        if let handshakeid = handshake?.identifier, let knownCaseId = knownCase.id {
+        if let handshakeid = handshake?.identifier,
+            let knownCaseId = try? database.knownCasesStorage.getId(for: knownCase.key) {
             try database.handshakesStorage.addKnownCase(knownCaseId, to: handshakeid)
             delegate.didFindMatch()
         }

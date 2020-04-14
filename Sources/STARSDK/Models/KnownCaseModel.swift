@@ -19,7 +19,7 @@ struct KnownCaseModel: Decodable {
 extension KnownCaseModel {
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        id = try values.decode(Int.self, forKey: .id)
+        id = nil
         key = try values.decode(Data.self, forKey: .key)
         onset = try values.decode(String.self, forKey: .onset)
     }

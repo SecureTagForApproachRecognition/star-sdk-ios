@@ -47,6 +47,12 @@ class KnownCasesStorage {
         }
     }
 
+    func getId(for key: Data) throws -> Int? {
+        let query = table.filter(keyColumn == key)
+        guard let row = try database.pluck(query) else { return nil }
+        return row[idColumn]
+    }
+
     /// add a known case
     /// - Parameter kc: known case
     /// - Parameter day: day identifier
