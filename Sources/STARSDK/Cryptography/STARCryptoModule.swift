@@ -44,7 +44,7 @@ class STARCryptoModule {
         try store.set(keys)
     }
 
-    private func getCurrentSK(day: Epoch) throws -> Data {
+    public func getCurrentSK(day: Epoch) throws -> Data {
         var keys = try store.get()
         while keys.first!.epoch.isBefore(other: day) {
             try rotateSK()

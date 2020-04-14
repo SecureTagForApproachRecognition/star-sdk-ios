@@ -94,6 +94,52 @@ final class STARTracingCryptoTests: XCTestCase {
         testKeyAndTokenToday(key, token, found: false)
     }
 
+    func testSecretKeyPushlishing() {
+        let store1 = KeyStore()
+        let star1: STARCryptoModule = STARCryptoModule(store: store1)!
+        let token = try! star1.getCurrentEphId()
+        _ = try! star1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(1 * .day)))
+        _ = try! star1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(2 * .day)))
+        _ = try! star1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(3 * .day)))
+
+        let key = (try! star1.getSecretKeyForPublishing(onsetDate: Date()))!
+
+        var handshakes: [HandshakeModel] = []
+        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), star: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
+
+        let store2 = KeyStore()
+        let star2: STARCryptoModule = STARCryptoModule(store: store2)!
+
+        let h = try! star2.checkContacts(secretKey: key, onsetDate: Epoch(date: Date()), bucketDate: Epoch(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
+            handshakes
+        })
+
+        XCTAssertNotNil(h)
+    }
+
+    func testSecretKeyPushlishingOnsetAfterContact() {
+        let store1 = KeyStore()
+        let star1: STARCryptoModule = STARCryptoModule(store: store1)!
+        let token = try! star1.getCurrentEphId()
+        _ = try! star1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(1 * .day)))
+        _ = try! star1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(2 * .day)))
+        _ = try! star1.getCurrentSK(day: Epoch(date: Date().addingTimeInterval(3 * .day)))
+
+        let key = (try! star1.getSecretKeyForPublishing(onsetDate: Date().addingTimeInterval(.day)))!
+
+        var handshakes: [HandshakeModel] = []
+        handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), star: token, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
+
+        let store2 = KeyStore()
+        let star2: STARCryptoModule = STARCryptoModule(store: store2)!
+
+        let h = try! star2.checkContacts(secretKey: key, onsetDate: Epoch(date: Date()), bucketDate: Epoch(date: Date().addingTimeInterval(.day)), getHandshake: { (_) -> ([HandshakeModel]) in
+            handshakes
+        })
+
+        XCTAssertNil(h)
+    }
+
     func testKeyAndTokenToday(_ key: String, _ token: String, found: Bool) {
         let store = KeyStore()
         let star: STARCryptoModule? = STARCryptoModule(store: store)!
@@ -102,7 +148,7 @@ final class STARTracingCryptoTests: XCTestCase {
         handshakes.append(HandshakeModel(identifier: 0, timestamp: Date(), star: Data(base64Encoded: token)!, TXPowerlevel: nil, RSSI: nil, knownCaseId: nil))
 
         let keyData = Data(base64Encoded: key)!
-        let h = try! star?.checkContacts(secretKey: keyData, onsetDate: Epoch(date: Date().addingTimeInterval(-1 * .hour * 24)), bucketDate: Epoch(), getHandshake: { (_) -> ([HandshakeModel]) in
+        let h = try! star?.checkContacts(secretKey: keyData, onsetDate: Epoch(date: Date().addingTimeInterval(-1 * .day)), bucketDate: Epoch(), getHandshake: { (_) -> ([HandshakeModel]) in
             handshakes
         })
         XCTAssertEqual(h != nil, found)
@@ -116,5 +162,7 @@ final class STARTracingCryptoTests: XCTestCase {
         ("testReset", testReset),
         ("testTokenToday", testTokenToday),
         ("testWrongTokenToday", testWrongTokenToday),
+        ("testSecretKeyPushlishing", testSecretKeyPushlishing),
+        ("testSecretKeyPushlishingOnsetAfterContact", testSecretKeyPushlishingOnsetAfterContact),
     ]
 }
