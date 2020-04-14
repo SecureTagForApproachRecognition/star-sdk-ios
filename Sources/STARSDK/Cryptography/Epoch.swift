@@ -18,11 +18,11 @@ struct Epoch: Codable, CustomStringConvertible, Equatable {
     }
 
     public func isBefore(other: Date) -> Bool {
-        return timestamp <= other.timeIntervalSince1970
+        return timestamp < other.timeIntervalSince1970
     }
 
     public func isBefore(other: Epoch) -> Bool {
-        return timestamp <= other.timestamp
+        return timestamp < other.timestamp
     }
 
     var description: String {

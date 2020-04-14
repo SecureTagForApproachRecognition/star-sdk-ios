@@ -84,7 +84,7 @@ class STARCryptoModule {
     public func checkContacts(secretKey: Data, onsetDate: Epoch, bucketDate: Epoch, getHandshake: (Date) -> ([HandshakeModel])) throws -> HandshakeModel? {
         var dayToTest: Epoch = onsetDate
         var secretKeyForDay: Data = secretKey
-        while dayToTest.isBefore(other: bucketDate) {
+        while dayToTest.timestamp <= bucketDate.timestamp {
             let handshakesOnDay = getHandshake(Date(timeIntervalSince1970: dayToTest.timestamp))
             guard !handshakesOnDay.isEmpty else {
                 dayToTest = dayToTest.getNext()

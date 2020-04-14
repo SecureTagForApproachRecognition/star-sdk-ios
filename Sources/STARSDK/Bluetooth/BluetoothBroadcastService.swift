@@ -121,9 +121,21 @@ extension BluetoothBroadcastService: CBPeripheralManagerDelegate {
     #endif
 
     func peripheralManager(_: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
+        #if CALIBRATION
+            logger?.log(type: .sender, "didReceiveRead")
+        #endif
         do {
             let data = try starCrypto!.getCurrentEphId()
-            request.value = data
+
+            switch STARMode.current {
+            #if CALIBRATION
+            case let .calibration(identifierPrefix) where identifierPrefix != "":
+                request.value = identifierPrefix.data(using: .utf8)! + data.prefix(22)
+            #endif
+            default:
+                request.value = data
+            }
+
             peripheralManager?.respond(to: request, withResult: .success)
             #if CALIBRATION
                 logger?.log(type: .sender, "← ✅ didReceiveRead: Responded with new token: \(data.hexEncodedString)")
