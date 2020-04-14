@@ -10,12 +10,12 @@ extension TimeInterval {
 }
 
 enum CryptoConstants {
-    static let keyLenght: Int = 26
+    static let keyLenght: Int = 16
     static let numberOfDaysToKeepData: Int = 21
     static let numberOfEpochsPerDay: Int = 24 * 12
     static let millisecondsPerEpoch = 24 * 60 * 60 * 1000 / CryptoConstants.numberOfDaysToKeepData
     // TODO: set correct broadcast key
-    static let broadcastKey: Data = "TODOTODOTODOTODOTODOTODOTODOTODOTODO".data(using: .utf8)!
+    static let broadcastKey: Data = "broadcast key".data(using: .utf8)!
 }
 
 enum CrypoError: Error {

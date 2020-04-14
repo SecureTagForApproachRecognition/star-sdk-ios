@@ -337,7 +337,7 @@ extension BluetoothDiscoveryService: CBPeripheralDelegate {
             return
         }
 
-        guard data.count == 26 else {
+        guard data.count == CryptoConstants.keyLenght else {
             #if CALIBRATION
                 logger?.log(type: .receiver, " → ❌ Received wrong number of bytes (\(data.count) bytes) from \(peripheral.identifier) at \(Date())")
             #endif
