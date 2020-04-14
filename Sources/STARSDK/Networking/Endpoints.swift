@@ -25,7 +25,7 @@ struct ExposeeEndpoint {
     /// Get the URL for the exposed people endpoint at a day
     /// - Parameter forDay: The day to fetch
     func getExposee(forDay: String) -> URL {
-        baseURLVersionned.appendingPathComponent(forDay).appendingPathExtension("json")
+        baseURLVersionned.appendingPathComponent("exposed").appendingPathComponent(forDay)
     }
 }
 

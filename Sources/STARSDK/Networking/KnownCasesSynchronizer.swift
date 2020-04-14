@@ -46,7 +46,7 @@ class KnownCasesSynchronizer {
         knownCases.removeAll()
         // compute day identifiers (formatted dates) for the last 14 days
         let dayIdentifierFormatter = DateFormatter()
-        dayIdentifierFormatter.dateFormat = "yyyyMMdd"
+        dayIdentifierFormatter.dateFormat = "yyyy-MM-dd"
         let dayIdentifiers = (0 ..< 14).reversed().map { days -> String in
             let date = Calendar.current.date(byAdding: .day, value: -1 * days, to: Date())!
             return dayIdentifierFormatter.string(from: date)
