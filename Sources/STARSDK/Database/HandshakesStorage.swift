@@ -76,21 +76,20 @@ class HandshakesStorage {
     }
 
     /// helper function to loop through all entries
-    /// - Parameter since: timeinterval used for looping
-    /// - Parameter block: execution block should return false to break looping
-    func loopThrough(since: Date = Date().addingTimeInterval(-60 * 60 * 24 * 14), block: (HandshakeModel, Int) -> Bool) throws {
-        let query = table.filter(timestampColumn > since)
+    func getBy(day: Date) throws -> [HandshakeModel] {
+        let query = table.filter(timestampColumn >= day.dayMin && timestampColumn <= day.dayMax)
+        var models = [HandshakeModel]()
         for row in try database.prepare(query) {
             guard row[associatedKnownCaseColumn] == nil else { continue }
-            let model = HandshakeModel(timestamp: row[timestampColumn],
+            var model = HandshakeModel(timestamp: row[timestampColumn],
                                        star: row[starColumn],
                                        TXPowerlevel: row[TXPowerlevelColumn],
                                        RSSI: row[RSSIColumn],
                                        knownCaseId: nil)
-            if !block(model, row[idColumn]) {
-                break
-            }
+            model.identifier = row[idColumn]
+            models.append(model)
         }
+        return models
     }
 
     /// Delete all entries
@@ -103,7 +102,6 @@ class HandshakesStorage {
     }
 
     func getHandshakes(_ request: HandshakeRequest) throws -> HandshakeResponse {
-
         var query = table
 
         // Limit
@@ -126,7 +124,7 @@ class HandshakesStorage {
             query = query.filter(associatedKnownCaseColumn != nil)
         }
 
-        var handshakes = Array<HandshakeModel>()
+        var handshakes = [HandshakeModel]()
         for row in try database.prepare(query) {
             let model = HandshakeModel(timestamp: row[timestampColumn],
                                        star: row[starColumn],
@@ -159,7 +157,6 @@ class HandshakesStorage {
 }
 
 public struct HandshakeRequest {
-
     public struct FilterOption: OptionSet {
         public let rawValue: Int
         public static let hasKnownCaseAssociated = FilterOption(rawValue: 1 << 0)
@@ -167,10 +164,12 @@ public struct HandshakeRequest {
             self.rawValue = rawValue
         }
     }
+
     public enum SortingOption {
         case ascendingTimestamp
         case descendingTimestamp
     }
+
     public let filterOption: FilterOption
     public let sortingOption: SortingOption
     public let offset: Int
@@ -195,5 +194,24 @@ public struct HandshakeResponse {
         self.nextRequest = nextRequest
         self.offset = offset
         self.limit = limit
+    }
+}
+
+private extension Date {
+    var dayMax: Date {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        var components = calendar.dateComponents([.year, .day, .month, .hour, .minute, .second], from: self)
+        components.hour = 23
+        components.minute = 59
+        components.second = 59
+        return calendar.date(from: components)!
+    }
+
+    var dayMin: Date {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let components = calendar.dateComponents([.year, .day, .month], from: self)
+        return calendar.date(from: components)!
     }
 }

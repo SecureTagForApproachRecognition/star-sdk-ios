@@ -1,6 +1,6 @@
+import os
 import STARSDK_CALIBRATION
 import UIKit
-import os
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -34,7 +34,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = RootViewController()
         window?.makeKeyAndVisible()
     }
-
 
     func applicationWillEnterForeground(_: UIApplication) {
         if window == nil {

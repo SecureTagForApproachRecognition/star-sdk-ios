@@ -2,7 +2,6 @@ import Foundation
 
 /// A model for known cases
 struct KnownCaseModel: Decodable {
-
     /// The identifier of the case
     let id: Int?
     /// The private key of the case

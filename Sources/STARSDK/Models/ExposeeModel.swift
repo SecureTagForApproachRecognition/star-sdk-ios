@@ -2,7 +2,6 @@ import Foundation
 
 /// Model of the exposed person
 struct ExposeeModel: Encodable {
-
     /// Secret key used to generate EphID (base64 encoded)
     let key: Data
 

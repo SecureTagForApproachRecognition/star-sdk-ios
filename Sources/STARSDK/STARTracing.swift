@@ -13,10 +13,10 @@ public protocol STARTracingDelegate: AnyObject {
 }
 
 #if CALIBRATION
-public extension STARTracingDelegate {
-    func didAddLog(_ entry: LogEntry) {}
-    func didAddHandshake(_ handshake: HandshakeModel) {}
-}
+    public extension STARTracingDelegate {
+        func didAddLog(_: LogEntry) {}
+        func didAddHandshake(_: HandshakeModel) {}
+    }
 #endif
 
 private var instance: STARSDK!
@@ -107,46 +107,46 @@ public enum STARTracing {
     }
 
     #if CALIBRATION
-    public static func startAdvertising() throws {
-        guard let instance = instance else {
-            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        public static func startAdvertising() throws {
+            guard let instance = instance else {
+                fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+            }
+            try instance.startAdvertising()
         }
-        try instance.startAdvertising()
-    }
 
-    public static func startReceiving() throws {
-        guard let instance = instance else {
-            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        public static func startReceiving() throws {
+            guard let instance = instance else {
+                fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+            }
+            try instance.startReceiving()
         }
-        try instance.startReceiving()
-    }
 
-    public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
-        try instance.getHandshakes(request: request)
-    }
-
-    public static func getLogs(request: LogRequest) throws -> LogResponse {
-        guard let instance = instance else {
-            fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+        public static func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
+            try instance.getHandshakes(request: request)
         }
-        return try instance.getLogs(request: request)
-    }
 
-    public static func numberOfHandshakes() throws -> Int {
-        try instance.numberOfHandshakes()
-    }
-    
-    public static var isInitialized: Bool {
-        return instance != nil
-    }
+        public static func getLogs(request: LogRequest) throws -> LogResponse {
+            guard let instance = instance else {
+                fatalError("STARSDK not initialized call `initialize(with:delegate:)`")
+            }
+            return try instance.getLogs(request: request)
+        }
 
-    public static var reconnectionDelay: Int {
-        get {
-            return BluetoothConstants.peripheralReconnectDelay
+        public static func numberOfHandshakes() throws -> Int {
+            try instance.numberOfHandshakes()
         }
-        set {
-            BluetoothConstants.peripheralReconnectDelay = newValue
+
+        public static var isInitialized: Bool {
+            return instance != nil
         }
-    }
+
+        public static var reconnectionDelay: Int {
+            get {
+                return BluetoothConstants.peripheralReconnectDelay
+            }
+            set {
+                BluetoothConstants.peripheralReconnectDelay = newValue
+            }
+        }
     #endif
 }

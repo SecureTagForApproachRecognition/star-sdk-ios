@@ -22,7 +22,7 @@ class STARSDK {
     private let database: STARDatabase
 
     /// The STAR crypto algorithm
-    private let starCrypto: STARCrypto
+    private let starCrypto: STARCryptoModule
 
     /// Fetch the discovery data and stores it
     private let applicationSynchronizer: ApplicationSynchronizer
@@ -40,18 +40,18 @@ class STARSDK {
     public weak var delegate: STARTracingDelegate?
 
     #if CALIBRATION
-    /// getter for identifier prefix for calibration mode
-    private(set) var identifierPrefix: String {
-        get {
-            switch STARMode.current {
-            case let .calibration(identifierPrefix):
-                return identifierPrefix
-            default:
-                fatalError("identifierPrefix is only usable in calibration mode")
+        /// getter for identifier prefix for calibration mode
+        private(set) var identifierPrefix: String {
+            get {
+                switch STARMode.current {
+                case let .calibration(identifierPrefix):
+                    return identifierPrefix
+                default:
+                    fatalError("identifierPrefix is only usable in calibration mode")
+                }
             }
+            set {}
         }
-        set {}
-    }
     #endif
 
     /// keeps track of  SDK state
@@ -73,7 +73,7 @@ class STARSDK {
         self.enviroment = enviroment
         self.appId = appId
         database = try STARDatabase()
-        starCrypto = try STARCrypto()
+        starCrypto = STARCryptoModule()!
         matcher = try STARMatcher(database: database, starCrypto: starCrypto)
         synchronizer = KnownCasesSynchronizer(appId: appId, database: database, matcher: matcher)
         applicationSynchronizer = ApplicationSynchronizer(enviroment: enviroment, storage: database.applicationStorage)
@@ -90,9 +90,9 @@ class STARSDK {
         matcher.delegate = self
 
         #if CALIBRATION
-        broadcaster.logger = self
-        discoverer.logger = self
-        database.logger = self
+            broadcaster.logger = self
+            discoverer.logger = self
+            database.logger = self
         #endif
 
         print(database)
@@ -142,14 +142,15 @@ class STARSDK {
     }
 
     #if CALIBRATION
-    func startAdvertising() throws {
-        state.trackingState = .activeAdvertising
-        broadcaster.startService()
-    }
-    func startReceiving() throws {
-        state.trackingState = .activeReceiving
-        discoverer.startScanning()
-    }
+        func startAdvertising() throws {
+            state.trackingState = .activeAdvertising
+            broadcaster.startService()
+        }
+
+        func startReceiving() throws {
+            state.trackingState = .activeReceiving
+            discoverer.startScanning()
+        }
     #endif
 
     /// Perform a new sync
@@ -238,7 +239,7 @@ class STARSDK {
                     }
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd"
-                    let model = ExposeeModel(key: try self.starCrypto.getSecretKey(), onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
+                    let model = ExposeeModel(key: try self.starCrypto.getSecretKeyForPublishing(onsetDate: onset)!, onset: dateFormatter.string(from: onset), authData: ExposeeAuthData(value: authString))
                     service.addExposee(model, completion: block)
 
                 } catch let error as STARTracingErrors {
@@ -261,21 +262,21 @@ class STARSDK {
         Default.shared.infectionStatus = .healthy
         try database.emptyStorage()
         try database.destroyDatabase()
+        starCrypto.reset()
     }
-
 
     #if CALIBRATION
-    func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
-        try database.handshakesStorage.getHandshakes(request)
-    }
+        func getHandshakes(request: HandshakeRequest) throws -> HandshakeResponse {
+            try database.handshakesStorage.getHandshakes(request)
+        }
 
-    func numberOfHandshakes() throws -> Int {
-        try database.handshakesStorage.numberOfHandshakes()
-    }
+        func numberOfHandshakes() throws -> Int {
+            try database.handshakesStorage.numberOfHandshakes()
+        }
 
-    func getLogs(request: LogRequest) throws -> LogResponse {
-        return try database.loggingStorage.getLogs(request)
-    }
+        func getLogs(request: LogRequest) throws -> LogResponse {
+            return try database.loggingStorage.getLogs(request)
+        }
     #endif
 }
 
@@ -291,7 +292,7 @@ extension STARSDK: STARMatcherDelegate {
             state.numberOfHandshakes = newHandshaked
         }
         #if CALIBRATION
-        delegate?.didAddHandshake(handshake)
+            delegate?.didAddHandshake(handshake)
         #endif
     }
 }
@@ -309,12 +310,12 @@ extension STARSDK: BluetoothPermissionDelegate {
 }
 
 #if CALIBRATION
-extension STARSDK: LoggingDelegate {
-    func log(type: LogType, _ string: String) {
-        os_log("%@: %@", type.description, string)
-        if let entry = try? database.loggingStorage.log(type: type, message: string) {
-            delegate?.didAddLog(entry)
+    extension STARSDK: LoggingDelegate {
+        func log(type: LogType, _ string: String) {
+            os_log("%@: %@", type.description, string)
+            if let entry = try? database.loggingStorage.log(type: type, message: string) {
+                delegate?.didAddLog(entry)
+            }
         }
     }
-}
 #endif

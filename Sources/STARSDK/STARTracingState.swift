@@ -16,8 +16,8 @@ public enum TrackingState {
     case active
 
     #if CALIBRATION
-    case activeReceiving
-    case activeAdvertising
+        case activeReceiving
+        case activeAdvertising
     #endif
 
     /// The tracking is stopped by the user

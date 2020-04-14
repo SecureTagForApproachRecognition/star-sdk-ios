@@ -16,5 +16,5 @@ enum BluetoothConstants {
     static var peripheralDisposeInterval: TimeInterval = 60 * 60
     static var peripheralDisposeIntervalSinceDiscovery: TimeInterval = 10 * 60
 
-    static var androidManufacturerId: UInt16 = 0xabba
+    static var androidManufacturerId: UInt16 = 0xABBA
 }

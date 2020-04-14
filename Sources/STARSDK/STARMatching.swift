@@ -12,7 +12,7 @@ protocol STARMatcherDelegate: class {
 /// matcher for STAR tokens
 class STARMatcher {
     /// The STAR crypto algorithm
-    private let starCrypto: STARCryptoProtocol
+    private let starCrypto: STARCryptoModule
 
     /// Databse
     private weak var database: STARDatabase!
@@ -24,26 +24,25 @@ class STARMatcher {
     /// - Parameters:
     ///   - database: databse
     ///   - starCrypto: star algorithm
-    init(database: STARDatabase, starCrypto: STARCrypto) throws {
+    init(database: STARDatabase, starCrypto: STARCryptoModule) throws {
         self.database = database
         self.starCrypto = starCrypto
     }
 
     /// check for new known case
     /// - Parameter knownCase: known Case
-    func checkNewKnownCase(_ knownCase: KnownCaseModel) throws {
-        var matchingHandshakeId: Int?
+    func checkNewKnownCase(_ knownCase: KnownCaseModel, bucketDay: String) throws {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let onset = dateFormatter.date(from: knownCase.onset)!
+        let bucketDayDate = dateFormatter.date(from: bucketDay)!
 
-        try database.handshakesStorage.loopThrough(block: { (handshake, handshakeId) -> Bool in
-            if self.starCrypto.validate(key: knownCase.key, star: handshake.star) {
-                matchingHandshakeId = handshakeId
-                return false
-            }
-            return true
-        })
+        let handshake = try starCrypto.checkContacts(secretKey: knownCase.key, onsetDate: Epoch(date: onset), bucketDate: Epoch(date: bucketDayDate)) { (day) -> ([HandshakeModel]) in
+            (try? database.handshakesStorage.getBy(day: day)) ?? []
+        }
 
-        if let matchingHandshakeId = matchingHandshakeId, let knownCaseId = knownCase.id {
-            try database.handshakesStorage.addKnownCase(knownCaseId, to: matchingHandshakeId)
+        if let handshakeid = handshake?.identifier, let knownCaseId = knownCase.id {
+            try database.handshakesStorage.addKnownCase(knownCaseId, to: handshakeid)
             delegate.didFindMatch()
         }
     }
@@ -52,29 +51,15 @@ class STARMatcher {
 // MARK: BluetoothDiscoveryDelegate implementation
 
 extension STARMatcher: BluetoothDiscoveryDelegate {
-    func didDiscover(data: Data, TXPowerlevel: Double?, RSSI: Double?) throws {
-        var matchingKnownCaseId = try database.handshakesStorage.starExists(star: data)
-
-        if matchingKnownCaseId == nil {
-            try database.knownCasesStorage.loopThrough { (knownCase) -> Bool in
-                if self.starCrypto.validate(key: knownCase.key, star: data) {
-                    matchingKnownCaseId = knownCase.id
-                    return false
-                }
-                return true
-            }
-        }
-
+    func didDiscover(data : Data, TXPowerlevel : Double?, RSSI : Double?) throws {
+        // Do no realtime matching
         let handshake = HandshakeModel(timestamp: Date(),
                                        star: data,
                                        TXPowerlevel: TXPowerlevel,
                                        RSSI: RSSI,
-                                       knownCaseId: matchingKnownCaseId)
+                                       knownCaseId: nil)
         try database.handshakesStorage.add(handshake: handshake)
 
         delegate.handShakeAdded(handshake)
-        if matchingKnownCaseId != nil {
-            delegate.didFindMatch()
-        }
     }
 }
