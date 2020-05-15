@@ -1,5 +1,10 @@
 # STARSDK
 
+> #### Moved to DP-3T!*
+> 
+> As of May 2020, all of our efforts are transitioning to [DP-3T](https://github.com/DP-3T).
+> 
+
 ## Introduction
 This is the iOS version of the Secure Tag for Approach Recognition (STAR) SDK. The idea of the sdk is, to provide a SDK, which enables an easy way to provide methods for contact tracing. This project was built within 71 hours at the HackZurich Hackathon 2020.
 
